@@ -1,24 +1,28 @@
 export class Logger {
-  private label: string;
+  private readonly label: string;
 
-  constructor(label: string) {
+  private room: Room;
+
+  public constructor(label: string) {
     this.label = label;
   }
 
-  log(...messages) {
-    console.log(`[${this.label}]`, ...messages);
+  public setRoom(room: Room): Logger {
+    this.room = room;
+    return this;
   }
 
-  logJSON(json) {
-    console.log(JSON.stringify(json));
+  public log(...messages: Array<any>): void {
+    console.log(...this.getArgs(), ...messages);
   }
-}
 
-export function Log<T extends { new(...args: Array<any>): {} }>(constructor: T) {
-  const classMatch = constructor.toString().match(/class (\w*)/);
-  const functionMatch = constructor.toString().match(/\[Function: (.*)\]/);
-  const label: string = (classMatch && classMatch[1]) || (functionMatch && functionMatch[1]);
-  return class extends constructor {
-    public logger: Logger = new Logger(label);
-  };
+  private getArgs(): Array<string> {
+    const args = [`[${this.label}]`];
+
+    if (this.room) {
+      args.push(`[${this.room.name}]`);
+    }
+
+    return args;
+  }
 }

@@ -1,9 +1,9 @@
 {
   "include": [
-    "default/**/*.js"
+    "src/**/*.ts"
   ],
   "reporter": [
-  "lcov",
+    "lcov",
     "text-summary"
   ]
 }

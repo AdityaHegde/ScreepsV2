@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "types": ["screeps", "node"],
-    "module": "commonjs",
+    "module": "CommonJS",
+    "lib": ["esnext"],
+    "target": "es2017",
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
@@ -10,6 +10,7 @@
     "sourceMap": true,
     "declaration": false,
 
+    "outDir": "dist",
     "baseUrl": ".",
     "paths": {
       "@memory/*": ["src/memory/*"]
@@ -21,6 +22,6 @@
   ],
   "exclude": [
     "node_modules",
-    "build"
+    "dist"
   ]
 }
