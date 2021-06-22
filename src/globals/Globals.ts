@@ -1,5 +1,4 @@
 import {BaseClass} from "../BaseClass";
-import {BaseInstanceClass} from "../BaseInstanceClass";
 
 /**
  * Abstraction to get globals across 
@@ -7,39 +6,45 @@ import {BaseInstanceClass} from "../BaseInstanceClass";
 export class Globals {
   public static instance = new Globals();
 
-  private globalInstances = new Map<string, Map<string, BaseInstanceClass>>();
-  private globalSingletons = new Map<string, BaseClass<any, any>>();
+  private globalInstances = new Map<string, Map<string, BaseClass>>();
 
-  public static getGlobal<T extends BaseInstanceClass>(
-    Clazz: typeof BaseClass, id: string, instanceGetter: () => T, freshInstance?: boolean,
+  public static init(): void {
+    this.instance = new Globals();
+  }
+
+  public static getGlobal<T extends BaseClass>(
+    Clazz: typeof BaseClass, id: string, instanceGetter?: () => T, freshInstance?: boolean,
   ): T {
     return this.instance.getGlobal(Clazz, id, instanceGetter, freshInstance);
   }
 
-  public static addGlobalSingleton<T extends BaseClass<any, any>>(singleton: T): T {
-    this.instance.globalSingletons.set(singleton.idSuffix, singleton);
-    return singleton;
+  public static addGlobal<T extends BaseClass>(instance: T): T {
+    this.instance.getGlobalsForClazz(instance.constructor as typeof BaseClass).set(instance.id, instance);
+    return instance;
   }
 
-  public static getGlobalSingleton<T extends BaseClass<any, any>>(id: string): T {
-    return this.instance.globalSingletons.get(id) as T;
-  }
-
-  private getGlobal<T extends BaseInstanceClass>(
-    Clazz: typeof BaseClass, id: string, instanceGetter: () => T, freshInstance?: boolean,
+  private getGlobal<T extends BaseClass>(
+    Clazz: typeof BaseClass, id: string, instanceGetter?: () => T, freshInstance?: boolean,
   ): T {
-    if (!this.globalInstances.has(Clazz.memoryName)) {
-      this.globalInstances.set(Clazz.memoryName, new Map());
-    }
-
-    const globalsForClazz = this.globalInstances.get(Clazz.memoryName);
+    const globalsForClazz = this.getGlobalsForClazz(Clazz);
 
     if (freshInstance || !globalsForClazz.has(id)) {
+      if (!instanceGetter) {
+        return null;
+      }
       const instance = instanceGetter();
       globalsForClazz.set(id, instance);
       return instance;
     } else {
       return globalsForClazz.get(id) as T;
     }
+  }
+
+  private getGlobalsForClazz(Clazz: typeof BaseClass) {
+    if (!this.globalInstances.has(Clazz.memoryName)) {
+      this.globalInstances.set(Clazz.memoryName, new Map());
+    }
+
+    return  this.globalInstances.get(Clazz.memoryName);
   }
 }

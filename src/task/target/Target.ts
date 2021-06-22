@@ -28,4 +28,6 @@ export abstract class Target<TargetType extends BaseTargetType> {
   public releasedWeightUpdate(target: TargetType, currentWeight: number): number {
     return this.getWeightForTarget(target);
   }
+
+  public abstract getInitialTargets(room: Room): Array<TargetType>;
 }

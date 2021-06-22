@@ -1,39 +1,45 @@
-import {BaseClass, BaseClassMemory} from "../BaseClass";
+import {BaseClass} from "../BaseClass";
 import {Job} from "./Job";
+import {MemoryClass} from "@memory/MemoryClass";
+import {JOB_ASSIGNER_ID} from "../constants";
+import {getIdFromRoom} from "../utils/getIdFromRoom";
 
-export interface JobAssignerMemory extends BaseClassMemory {}
-
-export interface JobAssignerOpts {
-  jobs: Array<Job>;
-}
-
-@BaseClass.Class("assigner")
-export class JobAssigner extends BaseClass<JobAssignerMemory, JobAssignerOpts> {
+@MemoryClass("assigner")
+export class JobAssigner extends BaseClass {
   public readonly jobs: Array<Job>;
 
-  public init(room: Room): void {
-    this.jobs.forEach(job => job.init(room));
+  public constructor(id: string, room: Room, jobs: Array<Job>) {
+    super(id, room);
+    this.jobs = jobs;
   }
 
-  public preTick(room: Room): void {
-    this.jobs.forEach(job => job.preTick(room));
+  public init(): void {
+    this.jobs.forEach(job => job.init());
   }
 
-  public tick(room: Room): void {
-    this.jobs.forEach(job => job.tick(room));
+  public preTick(): void {
+    this.jobs.forEach(job => job.preTick());
   }
 
-  public postTick(room: Room): void {
-    this.jobs.forEach(job => job.postTick(room));
+  public tick(): void {
+    this.jobs.forEach(job => job.tick());
   }
 
-  public assign(room: Room, creep: Creep, creepPool: string): void {
-    const sourceJob = this.jobs.find(job => job.creepPool.idSuffix === creepPool);
+  public postTick(): void {
+    this.jobs.forEach(job => job.postTick());
+  }
+
+  public assign(creep: Creep, creepPoolId: string): void {
+    const sourceJob = this.jobs.find(job => job.creepPool.id === creepPoolId);
 
     if (!sourceJob) {
       return;
     }
 
-    sourceJob.assign(room, creep);
+    sourceJob.assign(creep);
+  }
+
+  public static getJobAssigner(room: Room, jobs: Array<Job>): JobAssigner {
+    return new JobAssigner(getIdFromRoom(room, JOB_ASSIGNER_ID), room, jobs);
   }
 }

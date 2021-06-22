@@ -1,4 +1,5 @@
 import {Target} from "./Target";
+import {DepositTargetType} from "./DepositTarget";
 
 export class SourceTarget extends Target<Source> {
   public getWeightForCreep(creep:Creep): number {
@@ -33,5 +34,9 @@ export class SourceTarget extends Target<Source> {
 
   public releasedWeightUpdate(target: Source, currentWeight: number): number {
     return currentWeight + 1;
+  }
+
+  public getInitialTargets(room: Room): Array<Source> {
+    return room.find(FIND_SOURCES);
   }
 }

@@ -6,10 +6,12 @@ export interface DepositTargetType extends BaseTargetType {
 
 export class DepositTarget extends Target<DepositTargetType> {
   protected resource: ResourceConstant;
+  protected structureTypes: Set<StructureConstant>;
 
-  public constructor(resource: ResourceConstant) {
+  public constructor(resource: ResourceConstant, structureTypes: Array<StructureConstant>) {
     super();
     this.resource = resource;
+    this.structureTypes = new Set(structureTypes);
   }
 
   public getWeightForCreep(creep: Creep): number {
@@ -26,5 +28,11 @@ export class DepositTarget extends Target<DepositTargetType> {
 
   public getWeightPerAction(creep: Creep): number {
     return creep.memory.weight;
+  }
+
+  public getInitialTargets(room: Room): Array<DepositTargetType> {
+    return room.find(FIND_STRUCTURES, {
+      filter: structure => this.structureTypes.has(structure.structureType),
+    }) as Array<any>;
   }
 }

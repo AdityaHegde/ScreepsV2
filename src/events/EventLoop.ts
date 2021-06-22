@@ -1,9 +1,13 @@
 import {CreepCreatedEventEntry, CreepCreatedEventHandler} from "./CreepCreatedEventHandler";
-import {BaseClass, BaseClassMemory} from "../BaseClass";
+import {BaseClass} from "../BaseClass";
+import {MemoryClass} from "@memory/MemoryClass";
+import {Globals} from "../globals/Globals";
+import {EVENT_LOOP_ID} from "../constants";
 
 export type EventEntry = CreepCreatedEventEntry;
 
-export class EventLoop extends BaseClass<BaseClassMemory, any> {
+@MemoryClass("eventLoop")
+export class EventLoop extends BaseClass {
   protected readonly eventHandlers = {
     creepCreated: new CreepCreatedEventHandler(),
   };
@@ -24,5 +28,9 @@ export class EventLoop extends BaseClass<BaseClassMemory, any> {
 
   protected filterEvents(events = this.events): Array<EventEntry> {
     return events.filter(event => this.eventHandlers[event.type].handle(event));
+  }
+
+  public static getEventLoop(): EventLoop {
+    return Globals.getGlobal<EventLoop>(EventLoop as any, EVENT_LOOP_ID, () => new EventLoop(EVENT_LOOP_ID, null));
   }
 }

@@ -1,39 +1,38 @@
-import {BaseClass, BaseClassMemory} from "src/BaseClass";
+import {BaseClass} from "src/BaseClass";
 import {BaseTargetType, Target} from "./target/Target";
 import {TargetPool} from "./target-pool/TargetPool";
-import {TargetPoolInstance} from "./target-pool/TargetPoolInstance";
 import {Logger} from "../utils/Logger";
 import {TASK_DONE} from "../constants";
+import {MemoryClass} from "@memory/MemoryClass";
 
-export interface TaskMemory extends BaseClassMemory {
-
-}
-
-export interface TaskOpts<TargetClass extends Target<any>> {
-  target: TargetClass;
-  targetPool: TargetPool<any, any>;
-}
-
-@BaseClass.Class("task")
+@MemoryClass("task")
 export class Task<TargetType extends BaseTargetType, TargetClass extends Target<TargetType>>
-  extends BaseClass<TaskMemory, TaskOpts<TargetClass>> {
+  extends BaseClass {
 
   protected logger = new Logger("Task");
 
-  protected readonly target: TargetClass;
+  public readonly target: TargetClass;
   public readonly targetPool: TargetPool<TargetType, TargetClass>;
 
-  public init(room: Room): void {
-    this.targetPool.init(room);
+  public constructor(
+    id: string, room: Room,
+    target: TargetClass, targetPool: TargetPool<TargetType, TargetClass>,
+  ) {
+    super(id, room);
+    this.target = target;
+    this.targetPool = targetPool;
   }
 
-  public preTick(room: Room): void {
-    this.targetPool.preTick(room);
+  public init(): void {
+    this.targetPool.init();
+  }
+
+  public preTick(): void {
+    this.targetPool.preTick();
   }
 
   public tick(creep: Creep): (OK | ERR_INVALID_TARGET | typeof TASK_DONE)  {
-    const targetPoolInstance = this.targetPool.getTargetPoolInstance(creep.room);
-    const target = this.acquireTarget(targetPoolInstance, creep);
+    const target = this.acquireTarget(creep);
     if (!target) {
       return ERR_INVALID_TARGET;
     }
@@ -45,19 +44,19 @@ export class Task<TargetType extends BaseTargetType, TargetClass extends Target<
     return this.takeAction(creep, target) ? TASK_DONE : OK;
   }
 
-  public postTick(room: Room): void {
-    this.targetPool.postTick(room);
+  public postTick(): void {
+    this.targetPool.postTick();
   }
 
   public releaseTarget(creep: Creep): void {
-    this.targetPool.getTargetPoolInstance(creep.room).releaseTarget(creep);
+    this.targetPool.releaseTarget(creep);
   }
 
-  protected acquireTarget(targetPoolInstance: TargetPoolInstance<any, any>, creep: Creep): TargetType {
+  protected acquireTarget(creep: Creep): TargetType {
     let target = this.target.getTargetFromId(creep.memory.target);
 
     if (!target) {
-      if (!targetPoolInstance.claimFreeTarget(creep)) {
+      if (!this.targetPool.claimFreeTarget(creep)) {
         return null;
       }
 

@@ -2,14 +2,15 @@ import {EventEntryBase, EventHandler} from "./EventEntryBase";
 import {Globals} from "../globals/Globals";
 import {DEPOSIT_TARGET_POOL_ID, JOB_ASSIGNER_ID} from "../constants";
 import {JobAssigner} from "../job/JobAssigner";
-import {DepositTargetPool} from "../task/target-pool/DepositTargetPool";
+import {TargetPool} from "../task/target-pool/TargetPool";
+import {getIdFromRoom} from "../utils/getIdFromRoom";
 
 export interface CreepCreatedEventEntry extends EventEntryBase {
   type: "creepCreated";
 
   creepName: string;
-  creepPool: string;
   roomName: string;
+  creepPoolId: string;
 }
 
 export class CreepCreatedEventHandler extends EventHandler<CreepCreatedEventEntry> {
@@ -19,10 +20,11 @@ export class CreepCreatedEventHandler extends EventHandler<CreepCreatedEventEntr
       return true;
     }
 
-    Globals.getGlobalSingleton<JobAssigner>(JOB_ASSIGNER_ID)
-      .assign(Game.rooms[eventEntry.roomName], creep, eventEntry.creepPool);
-    Globals.getGlobalSingleton<DepositTargetPool<any>>(DEPOSIT_TARGET_POOL_ID)
-      .updateTargets(Game.rooms[eventEntry.roomName]);
+    const room = Game.rooms[eventEntry.roomName];
+    Globals.getGlobal<JobAssigner>(JobAssigner as any, getIdFromRoom(room, JOB_ASSIGNER_ID))
+      ?.assign(creep, eventEntry.creepPoolId);
+    Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, DEPOSIT_TARGET_POOL_ID))
+      ?.updateTargets();
 
     return false;
   }
