@@ -1,12 +1,12 @@
-import {BaseClass} from "src/BaseClass";
+import {RoomBaseClass} from "src/RoomBaseClass";
 import {CreepPool} from "./CreepPool";
 import {Task} from "src/task/Task";
-import {TASK_DONE} from "../constants";
+import {NEW_TASK_MODE, NO_SUB_TASK_MODE, TASK_DONE} from "../constants";
 import {Logger} from "../utils/Logger";
 import {MemoryClass} from "@memory/MemoryClass";
 
 @MemoryClass("jobs")
-export class Job extends BaseClass {
+export class Job extends RoomBaseClass {
   public readonly creepPool: CreepPool;
   public readonly tasks: Array<Array<Task<any, any>>>;
 
@@ -19,6 +19,7 @@ export class Job extends BaseClass {
     super(id, room);
     this.creepPool = creepPool;
     this.tasks = tasks;
+    this.logger.setRoom(this.room);
   }
 
   public init(): void {
@@ -32,12 +33,12 @@ export class Job extends BaseClass {
 
   public tick(): void {
     this.creepPool.tick((creep: Creep) => {
-      this.logger.setRoom(this.room).log(`creep=${creep.name} task=${creep.memory.task} subTask=${creep.memory.subTask}`);
-      if (!this.tasks[creep.memory.task]?.[creep.memory.subTask]) {
+      this.logger.setCreep(creep);
+
+      const task = this.tasks[creep.memory.task]?.[creep.memory.subTask];
+      if (!task) {
         return;
       }
-
-      const task = this.tasks[creep.memory.task][creep.memory.subTask];
 
       const taskStatus = task.tick(creep);
 
@@ -50,9 +51,18 @@ export class Job extends BaseClass {
       if (taskStatus === ERR_INVALID_TARGET) {
         this.assignSubTask(creep);
       } else if (taskStatus === TASK_DONE) {
-        this.logger.setRoom(this.room).log(`creep=${creep.name} finished task. assigning next task`);
+        // this.logger.log(`mode=finishedTask`);
         this.assignNextTask(creep);
       }
+    }, (creepMemory) => {
+      const task = this.tasks[creepMemory.task]?.[creepMemory.subTask];
+      if (!task) {
+        return;
+      }
+
+      task.releaseTarget({
+        memory: creepMemory,
+      } as Creep);
     });
   }
 
@@ -73,12 +83,21 @@ export class Job extends BaseClass {
   }
 
   protected assignSubTask(creep: Creep): void {
+    let assigned = false;
+
+    creep.memory.subTask = 0;
+
     for (let i = 0; i < this.tasks[creep.memory.task].length; i++) {
       if (this.tasks[creep.memory.task][i].targetPool.hasFreeTarget()) {
         creep.memory.subTask = i;
-        this.logger.setRoom(this.room).log(`${creep.name} assigned to ${creep.memory.task}/${i}`);
+        this.logger.log(`mode=${NEW_TASK_MODE}`);
+        assigned = true;
         break;
       }
+    }
+
+    if (!assigned) {
+      this.logger.log(`mode=${NO_SUB_TASK_MODE}`)
     }
   }
 }

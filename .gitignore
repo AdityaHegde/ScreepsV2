@@ -12,6 +12,7 @@
 /dist
 /coverage
 /server
+/logs
 
 #### Misc
 npm-debug.log

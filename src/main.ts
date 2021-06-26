@@ -1,6 +1,5 @@
 import {EventEntry, EventLoop} from "./events/EventLoop";
 import {GameRunner} from "./runner/GameRunner";
-import {Logger} from "./utils/Logger";
 import {simpleRoomRunnerFactory} from "./factory/simpleRoomRunnerFactory";
 import {Globals} from "./globals/Globals";
 
@@ -12,6 +11,7 @@ declare global {
 
   interface RoomMemory {
     initialised: boolean;
+    planned: boolean;
   }
 
   interface CreepMemory {

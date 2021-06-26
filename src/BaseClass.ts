@@ -5,12 +5,10 @@ export class BaseClass {
   public static memoryName: string;
 
   public readonly id: string;
-  public readonly room: Room;
   public readonly memory: Record<string, any>;
   protected logger = new Logger("Basic");
 
-  public constructor(id: string, room: Room) {
+  public constructor(id: string) {
     this.id = id;
-    this.room = room;
   }
 }

@@ -1,5 +1,5 @@
-import {BaseClass} from "../BaseClass";
 import {getClassName} from "../utils/getClassName";
+import {BaseClass} from "../BaseClass";
 
 /**
  * Adds memory support to the class.

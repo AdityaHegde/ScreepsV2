@@ -1,15 +1,23 @@
-import {CreepCreatedEventEntry, CreepCreatedEventHandler} from "./CreepCreatedEventHandler";
-import {BaseClass} from "../BaseClass";
+import {CreepCreatedEventEntry, CreepCreatedEventEntryType, CreepCreatedEventHandler} from "./CreepCreatedEventHandler";
 import {MemoryClass} from "@memory/MemoryClass";
 import {Globals} from "../globals/Globals";
 import {EVENT_LOOP_ID} from "../constants";
+import {BaseClass} from "../BaseClass";
+import {
+  ConstructionSiteCreatedEvent,
+  ConstructionSiteCreatedEventHandler,
+  ConstructionSiteCreatedEventType
+} from "./ConstructionSiteCreatedEventHandler";
+import {StructureBuiltEvent, StructureBuiltEventHandler, StructureBuiltEventType} from "./StructureBuiltEventHandler";
 
-export type EventEntry = CreepCreatedEventEntry;
+export type EventEntry = CreepCreatedEventEntry | ConstructionSiteCreatedEvent | StructureBuiltEvent;
 
 @MemoryClass("eventLoop")
 export class EventLoop extends BaseClass {
   protected readonly eventHandlers = {
-    creepCreated: new CreepCreatedEventHandler(),
+    [CreepCreatedEventEntryType]: new CreepCreatedEventHandler(),
+    [ConstructionSiteCreatedEventType]: new ConstructionSiteCreatedEventHandler(),
+    [StructureBuiltEventType]: new StructureBuiltEventHandler(),
   };
 
   protected events: Array<EventEntry>;
@@ -27,10 +35,10 @@ export class EventLoop extends BaseClass {
   }
 
   protected filterEvents(events = this.events): Array<EventEntry> {
-    return events.filter(event => this.eventHandlers[event.type].handle(event));
+    return events.filter(event => this.eventHandlers[event.type].handle(event as any));
   }
 
   public static getEventLoop(): EventLoop {
-    return Globals.getGlobal<EventLoop>(EventLoop as any, EVENT_LOOP_ID, () => new EventLoop(EVENT_LOOP_ID, null));
+    return Globals.getGlobal<EventLoop>(EventLoop as any, EVENT_LOOP_ID, () => new EventLoop(EVENT_LOOP_ID));
   }
 }

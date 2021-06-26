@@ -1,5 +1,4 @@
 import {Target} from "./Target";
-import {DepositTargetType} from "./DepositTarget";
 
 export class SourceTarget extends Target<Source> {
   public getWeightForCreep(creep:Creep): number {

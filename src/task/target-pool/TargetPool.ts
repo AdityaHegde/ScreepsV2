@@ -1,4 +1,4 @@
-import {BaseClass} from "../../BaseClass";
+import {RoomBaseClass} from "../../RoomBaseClass";
 import {BaseTargetType, Target} from "../target/Target";
 import {inMemory} from "@memory/inMemory";
 import {MemoryClass} from "@memory/MemoryClass";
@@ -6,7 +6,7 @@ import {MemoryClass} from "@memory/MemoryClass";
 @MemoryClass("targetPool")
 export class TargetPool<
   TargetType extends BaseTargetType, TargetClass extends Target<any>,
-> extends BaseClass {
+> extends RoomBaseClass {
   protected readonly target: TargetClass;
 
   public freeTargets: Array<string>;
@@ -42,14 +42,14 @@ export class TargetPool<
     this.targetWeight[target.id] = weight;
   }
 
-  public removeTarget(target: TargetType): void {
-    const idx = this.targets.indexOf(target.id);
+  public removeTarget(targetId: string): void {
+    const idx = this.targets.indexOf(targetId);
     if (idx === -1) {
       return;
     }
 
     this.targets.splice(idx, 1);
-    delete this.targetWeight[target.id];
+    delete this.targetWeight[targetId];
   }
 
   public updateTargets(): void {

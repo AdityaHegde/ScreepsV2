@@ -46,7 +46,8 @@
     "sinon-chai": "^3.7.0",
     "ts-config": "^20.10.0",
     "ts-node": "^10.0.0",
-    "typescript": "^4.3.3"
+    "typescript": "^4.3.3",
+    "winston": "^3.3.3"
   },
   "_moduleAliases": {
     "@memory": "src/memory"

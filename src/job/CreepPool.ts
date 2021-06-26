@@ -1,11 +1,12 @@
-import {BaseClass} from "../BaseClass";
+import {RoomBaseClass} from "../RoomBaseClass";
 import {EventLoop} from "../events/EventLoop";
 import {Logger} from "../utils/Logger";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
+import {CreepCreatedEventHandler} from "../events/CreepCreatedEventHandler";
 
 @MemoryClass("creepPool")
-export class CreepPool extends BaseClass {
+export class CreepPool extends RoomBaseClass {
   public readonly maxCount: number;
   public readonly creepNamePrefix: string;
 
@@ -31,6 +32,9 @@ export class CreepPool extends BaseClass {
   @inMemory(() => [])
   public creeps: Array<string>;
 
+  @inMemory(() => 0)
+  public lastCapacity: number;
+
   @inMemory(function (this: CreepPool) {
     return this.initParts.reduce((power, part) =>
       power + (part === this.powerPart ? 1 : 0), 0);
@@ -53,14 +57,17 @@ export class CreepPool extends BaseClass {
     this.powerPart = powerPart;
     this.addMove = addMove;
     this.maxParts = maxParts;
+    this.logger.setRoom(this.room);
   }
 
   public preTick(): void {
-    this.upgradeParts();
+    if (!this.lastCapacity || this.lastCapacity > this.room.energyCapacityAvailable) {
+      this.upgradeParts();
+    }
   }
 
-  public tick(creepCallback: (creep: Creep) => void): void {
-    this.forEachCreep(creepCallback);
+  public tick(creepCallback: (creep: Creep) => void, deadCreepCallback: (creepMemory: CreepMemory) => void): void {
+    this.forEachCreep(creepCallback, deadCreepCallback);
   }
 
   public postTick(): void {
@@ -68,11 +75,15 @@ export class CreepPool extends BaseClass {
   }
 
   protected upgradeParts(): void {
+    if (this.lastCapacity === this.room.energyCapacityAvailable) {
+      return;
+    }
+
     let newPart = this.creepParts[this.partsIdx];
     let newPartCost = BODYPART_COST[newPart] + (this.addMove ? BODYPART_COST[MOVE] : 0);
 
-    // this.logger.setRoom(room).log("[Upgrade Parts]", `Capacity: ${this.room.energyCapacityAvailable}. ` +
-    //   `Parts Cost: ${this.partsCost}. New Cost: ${newPartCost}`);
+    this.logger.log("[Upgrade Parts]", `Capacity: ${this.room.energyCapacityAvailable}. ` +
+      `Parts Cost: ${this.partsCost}. New Cost: ${newPartCost}`);
 
     // if the available energy capacity can accommodate the new part or if the parts has reached max parts count (50)
     while (this.room.energyCapacityAvailable >= (this.partsCost + newPartCost) &&
@@ -88,11 +99,13 @@ export class CreepPool extends BaseClass {
       this.partsIdx = (this.partsIdx + 1) % this.creepParts.length;
       this.power += (newPart === this.powerPart ? 1 : 0);
 
-      // this.logger.setRoom(room).log("Upgraded the creeps parts to", this.parts.join(","));
+      // this.logger.log("Upgraded the creeps parts to", this.parts.join(","));
 
       newPart = this.creepParts[this.partsIdx];
       newPartCost = BODYPART_COST[newPart] + (this.addMove ? BODYPART_COST[MOVE] : 0)
     }
+
+    this.lastCapacity = this.room.energyCapacityAvailable;
   }
 
   protected spawnCreeps(): void {
@@ -112,28 +125,28 @@ export class CreepPool extends BaseClass {
             power: this.power,
           };
           Memory.creepNameId++;
-          EventLoop.getEventLoop().addEvent({
-            type: "creepCreated",
-            creepName, creepPoolId: this.id, roomName: this.room.name,
-          });
-          this.logger.setRoom(this.room).log(`Creep created. name=${creepName}`);
+          EventLoop.getEventLoop().addEvent(CreepCreatedEventHandler.getEvent(
+            this.room.name, creepName, this.id,
+          ));
+          this.logger.log(`Creep created. name=${creepName}`);
         } else {
-          this.logger.setRoom(this.room).log(`Creep creation failed. name=${creepName} code=${retCode}`);
+          this.logger.log(`Creep creation failed. name=${creepName} code=${retCode}`);
         }
       }
     } else {
-      // this.logger.setRoom(room).log("Not spawning creeps");
+      // this.logger.log("Not spawning creeps");
     }
   }
 
-  protected forEachCreep(creepCallback: (creep: Creep) => void): void {
-    const deadCreepNames = new Array<string>();
-
-    this.creeps = this.creeps.filter((creepId) => {
-      const creep = Game.creeps[creepId];
+  protected forEachCreep(
+    creepCallback: (creep: Creep) => void, deadCreepCallback: (creepMemory: CreepMemory) => void,
+  ): void {
+    this.creeps = this.creeps.filter((creepName) => {
+      const creep = Game.creeps[creepName];
 
       if (!creep) {
-        deadCreepNames.push(creep.name);
+        deadCreepCallback(Memory.creeps[creepName]);
+        delete Memory.creeps[creepName];
         return false;
       }
 
@@ -142,12 +155,6 @@ export class CreepPool extends BaseClass {
       }
 
       return true;
-    });
-
-    deadCreepNames.forEach((deadCreepId) => {
-      if (Memory.creeps[deadCreepId]) {
-        delete Memory.creeps[deadCreepId];
-      }
     });
   }
 }

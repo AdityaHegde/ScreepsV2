@@ -2,6 +2,7 @@ export class Logger {
   private readonly label: string;
 
   private room: Room;
+  private creep: Creep;
 
   public constructor(label: string) {
     this.label = label;
@@ -9,6 +10,11 @@ export class Logger {
 
   public setRoom(room: Room): Logger {
     this.room = room;
+    return this;
+  }
+
+  public setCreep(creep: Creep): Logger {
+    this.creep = creep;
     return this;
   }
 
@@ -21,6 +27,10 @@ export class Logger {
 
     if (this.room) {
       args.push(`[${this.room.name}]`);
+    }
+
+    if (this.creep) {
+      args.push(`creep=${this.creep.name} task=${this.creep.memory.task} subTask=${this.creep.memory.subTask}`);
     }
 
     return args;

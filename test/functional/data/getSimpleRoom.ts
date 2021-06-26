@@ -3,6 +3,12 @@ import {TerrainMatrix} from "screeps-server-mockup";
 export async function getSimpleRoom(server: any, roomName: string): Promise<void> {
   const terrain = new TerrainMatrix();
   [[10, 10], [10, 40], [40, 10], [40, 40]].forEach(([x, y]) => terrain.set(x, y, "wall"));
+  for (let i = 0; i < 50; i++) {
+    terrain.set(i, 0, "wall");
+    terrain.set(i, 49, "wall");
+    terrain.set(0, i, "wall");
+    terrain.set(49, i, "wall");
+  }
 
   await server.world.addRoom(roomName);
   await server.world.setTerrain(roomName, terrain);

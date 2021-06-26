@@ -18,11 +18,14 @@ export abstract class Target<TargetType extends BaseTargetType> {
   }
 
   public updateWeights(creep: Creep, currentWeight: number): number {
-    creep.memory.weight = Math.max(
-      currentWeight - this.getWeightForCreep(creep),
-      currentWeight,
-    );
-    return currentWeight - creep.memory.weight;
+    const creepWeight = this.getWeightForCreep(creep);
+    if (creepWeight < currentWeight) {
+      creep.memory.weight = creepWeight;
+      return currentWeight - creepWeight;
+    } else {
+      creep.memory.weight = currentWeight;
+      return 0;
+    }
   }
 
   public releasedWeightUpdate(target: TargetType, currentWeight: number): number {
@@ -30,4 +33,8 @@ export abstract class Target<TargetType extends BaseTargetType> {
   }
 
   public abstract getInitialTargets(room: Room): Array<TargetType>;
+
+  public targetLowOnWeight(room: Room, target: TargetType): void {
+    // nothing to do
+  }
 }

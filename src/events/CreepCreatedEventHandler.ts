@@ -5,11 +5,12 @@ import {JobAssigner} from "../job/JobAssigner";
 import {TargetPool} from "../task/target-pool/TargetPool";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
 
+export const CreepCreatedEventEntryType = "CreepCreated";
+
 export interface CreepCreatedEventEntry extends EventEntryBase {
-  type: "creepCreated";
+  type: typeof CreepCreatedEventEntryType;
 
   creepName: string;
-  roomName: string;
   creepPoolId: string;
 }
 
@@ -27,5 +28,12 @@ export class CreepCreatedEventHandler extends EventHandler<CreepCreatedEventEntr
       ?.updateTargets();
 
     return false;
+  }
+
+  public static getEvent(roomName: string, creepName: string, creepPoolId: string): CreepCreatedEventEntry {
+    return {
+      type: CreepCreatedEventEntryType,
+      roomName, creepName, creepPoolId,
+    };
   }
 }

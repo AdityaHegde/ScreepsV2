@@ -15,7 +15,7 @@ export class DepositTarget extends Target<DepositTargetType> {
   }
 
   public getWeightForCreep(creep: Creep): number {
-    return creep.store.getFreeCapacity(this.resource);
+    return creep.store.getUsedCapacity(this.resource);
   }
 
   public getWeightForTarget(target: DepositTargetType): number {
