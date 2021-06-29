@@ -1,7 +1,7 @@
 import {MemoryClass} from "@memory/MemoryClass";
 import {RoomBaseClass} from "../RoomBaseClass";
 import {inMemory} from "@memory/inMemory";
-import {ArrayPos, BuildingPrefab, Prefab, RCLPrefab} from "../preprocessing/Prefab";
+import {ArrayPos, BuildingPlan, Prefab} from "../preprocessing/Prefab";
 import {BunkerPrefab} from "../data/Bunker";
 import {
   BuildingPrefabTypeToTypeMap,
@@ -10,15 +10,23 @@ import {
 } from "../preprocessing/ParserMetadata";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
 import {COLONY_PLAN_ID} from "../constants";
+import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
 
 @MemoryClass("plan")
 export class ColonyPlan extends RoomBaseClass {
   @inMemory(() => [])
-  public rclPrefabs: Array<RCLPrefab>;
+  public rclPrefabs: Array<Array<BuildingPlan>>;
 
   public costMatrix: CostMatrix;
 
   public positionDedupe = new Set<string>();
+
+  public readonly pathFinder: ColonyPathFinder;
+
+  public constructor(id: string, room: Room, pathFinder: ColonyPathFinder) {
+    super(id, room);
+    this.pathFinder = pathFinder;
+  }
 
   public plan(): void {
     // TODO: do automatic placement
@@ -36,13 +44,13 @@ export class ColonyPlan extends RoomBaseClass {
     this.addPaths(spawn.pos);
   }
 
-  public static getColonyPlan(room: Room): ColonyPlan {
-    return new ColonyPlan(getIdFromRoom(room, COLONY_PLAN_ID), room);
+  public static getColonyPlan(room: Room, colonyPathFinder: ColonyPathFinder): ColonyPlan {
+    return new ColonyPlan(getIdFromRoom(room, COLONY_PLAN_ID), room, colonyPathFinder);
   }
 
   private loadFromPrefab(prefab: Prefab, center: RoomPosition) {
     prefab[1].forEach((rclPrefab, index) => {
-      let rclPrefabForRoom: RCLPrefab;
+      let rclPrefabForRoom: Array<BuildingPlan>;
 
       if (this.rclPrefabs.length > index) {
         rclPrefabForRoom = this.rclPrefabs[index];
@@ -52,22 +60,30 @@ export class ColonyPlan extends RoomBaseClass {
       }
 
       rclPrefab.forEach((buildingPrefab) => {
-        const buildingPrefabForRoom: BuildingPrefab = [buildingPrefab[0], []];
+        const buildingPlan: BuildingPlan = [buildingPrefab[0], []];
         buildingPrefab[1].forEach((buildingPos) => {
-          if (buildingPos[0] === 0 && buildingPos[1] === 0) {
+          if (buildingPos[1][0] === 0 && buildingPos[1][1] === 0) {
             return;
           }
-          this.addBuildingPos(buildingPrefabForRoom, [
-            buildingPos[0] + center.x, buildingPos[1] + center.y,
+          this.addBuildingPos(buildingPlan, [
+            buildingPos[1][0] + center.x, buildingPos[1][1] + center.y,
           ]);
         });
-        rclPrefabForRoom.push(buildingPrefabForRoom);
+        rclPrefabForRoom.push(buildingPlan);
       });
+    });
+
+    prefab[2].forEach((rawRoad) => {
+      rawRoad.forEach((roadPos) => {
+        roadPos[0] += center.x;
+        roadPos[1] += center.y;
+      });
+      this.pathFinder.addRoad(rawRoad)
     });
   }
 
   private addPaths(origin: RoomPosition) {
-    const roadBuildingPrefab = this.rclPrefabs[0]
+    const roadBuildingPlan = this.rclPrefabs[0]
       .find(buildingPrefab => buildingPrefab[0] === BuildingTypeToPrefabTypeMap[STRUCTURE_ROAD]);
     let containerBuildingPrefab = this.rclPrefabs[0]
       .find(buildingPrefab => buildingPrefab[0] === BuildingTypeToPrefabTypeMap[STRUCTURE_CONTAINER]);
@@ -78,13 +94,13 @@ export class ColonyPlan extends RoomBaseClass {
     }
 
     this.room.find(FIND_SOURCES).forEach((source) => {
-      this.addPathToTarget(roadBuildingPrefab, containerBuildingPrefab, origin, source.pos, 1);
+      this.addPathToTarget(roadBuildingPlan, containerBuildingPrefab, origin, source.pos, 1);
     });
-    this.addPathToTarget(roadBuildingPrefab, containerBuildingPrefab, origin, this.room.controller.pos, 3);
+    this.addPathToTarget(roadBuildingPlan, containerBuildingPrefab, origin, this.room.controller.pos, 3);
   }
 
   private addPathToTarget(
-    roadBuildingPrefab: BuildingPrefab, containerBuildingPrefab: BuildingPrefab,
+    roadBuildingPlan: BuildingPlan, containerBuildingPlan: BuildingPlan,
     origin: RoomPosition, target: RoomPosition, range: number,
   ) {
     const pathFinderPath = PathFinder.search(origin, {pos: target, range}, {
@@ -92,28 +108,34 @@ export class ColonyPlan extends RoomBaseClass {
         return this.costMatrix;
       }
     });
-    pathFinderPath.path.forEach((pos) => {
-      this.addBuildingPos(roadBuildingPrefab, [pos.x, pos.y]);
+    const rawRoad = new Array<ArrayPos>();
+
+    pathFinderPath.path.forEach((pos, index) => {
+      const arrayPos: ArrayPos = [pos.x, pos.y];
+      if (index < pathFinderPath.path.length - 1) rawRoad.push(arrayPos);
+      this.addBuildingPos(roadBuildingPlan, arrayPos);
     });
-    this.addBuildingPos(containerBuildingPrefab, [
+    this.addBuildingPos(containerBuildingPlan, [
       pathFinderPath.path[pathFinderPath.path.length - 1].x,
       pathFinderPath.path[pathFinderPath.path.length - 1].y,
     ]);
+
+    this.pathFinder.addRoad(rawRoad);
   }
 
   private addBuildingPos(
-    buildingPrefabForRoom: BuildingPrefab, buildingPos: ArrayPos,
+    buildingPlan: BuildingPlan, buildingPos: ArrayPos,
   ) {
     const posForRoom: ArrayPos = [...buildingPos];
 
-    const dedupeKey = `${buildingPrefabForRoom[0]}-${posForRoom[0]}-${posForRoom[1]}`;
+    const dedupeKey = `${buildingPlan[0]}-${posForRoom[0]}-${posForRoom[1]}`;
     if (this.positionDedupe.has(dedupeKey)) {
       return;
     }
     this.positionDedupe.add(dedupeKey);
 
-    buildingPrefabForRoom[1].push(posForRoom);
-    if (!(BuildingPrefabTypeToTypeMap[buildingPrefabForRoom[0]] in WALKABLE_BUILDING_TYPES)) {
+    buildingPlan[1].push(posForRoom);
+    if (!(BuildingPrefabTypeToTypeMap[buildingPlan[0]] in WALKABLE_BUILDING_TYPES)) {
       this.costMatrix.set(posForRoom[0], posForRoom[1], 255);
     }
   }

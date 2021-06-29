@@ -1,5 +1,5 @@
 import {RoomBaseClass} from "src/RoomBaseClass";
-import {CreepPool} from "./CreepPool";
+import {CreepPool} from "../creep-pool/CreepPool";
 import {Task} from "src/task/Task";
 import {NEW_TASK_MODE, NO_SUB_TASK_MODE, TASK_DONE} from "../constants";
 import {Logger} from "../utils/Logger";
@@ -24,6 +24,7 @@ export class Job extends RoomBaseClass {
 
   public init(): void {
     this.tasks.forEach(tasks => tasks.forEach(task => task.init()));
+    this.creepPool.init();
   }
 
   public preTick(): void {

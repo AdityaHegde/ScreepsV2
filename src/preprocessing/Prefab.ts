@@ -1,5 +1,11 @@
 export type ArrayPos = [x: number, y: number];
+export type RoadPos = [roadIdx: number, roadPosIdx: number, direction?: number];
+export type BuildingPos = [Array<RoadPos>, ArrayPos];
 export type BuildingPrefab = [
+  type: number,
+  plans: Array<BuildingPos>,
+];
+export type BuildingPlan = [
   type: number,
   plans: Array<ArrayPos>,
 ];
@@ -9,4 +15,5 @@ export type Prefab = [
   // starting top going clockwise until left
   distances: Array<number>,
   rclPrefabs: Array<RCLPrefab>,
+  roads: Array<Array<ArrayPos>>,
 ];

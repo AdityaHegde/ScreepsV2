@@ -30,7 +30,9 @@ export class Logger {
     }
 
     if (this.creep) {
-      args.push(`creep=${this.creep.name} task=${this.creep.memory.task} subTask=${this.creep.memory.subTask}`);
+      args.push(`creep=${this.creep.name}`);
+      if ("task" in this.creep.memory) args.push(`task=${this.creep.memory.task}`);
+      if ("subTask" in this.creep.memory) args.push(`subTask=${this.creep.memory.subTask}`);
     }
 
     return args;

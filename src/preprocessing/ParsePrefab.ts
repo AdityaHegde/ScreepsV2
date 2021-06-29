@@ -20,6 +20,7 @@ export class ParsePrefab {
       }
     }
 
+    parseMetadata.prefab[2] = plan.roads;
     parseMetadata.normalize();
 
     return parseMetadata.prefab;

@@ -5,13 +5,13 @@ import {Logger} from "../utils/Logger";
 
 export class GameRunner {
   public readonly eventLoop: EventLoop;
-  public readonly roomRunnerFactory: (room: Room) => ColonyRunner;
+  public readonly colonyRunnerFactory: (room: Room) => ColonyRunner;
 
   protected readonly logger = new Logger("GameRunner");
 
-  public constructor(eventLoop: EventLoop, roomRunnerFactory: (room: Room) => ColonyRunner) {
+  public constructor(eventLoop: EventLoop, colonyRunnerFactory: (room: Room) => ColonyRunner) {
     this.eventLoop = eventLoop;
-    this.roomRunnerFactory = roomRunnerFactory;
+    this.colonyRunnerFactory = colonyRunnerFactory;
   }
 
   public run(): void {
@@ -24,7 +24,7 @@ export class GameRunner {
         return;
       }
 
-      const roomRunner = Globals.getGlobal<ColonyRunner>(ColonyRunner as any, room.name, () => this.roomRunnerFactory(room));
+      const roomRunner = Globals.getGlobal<ColonyRunner>(ColonyRunner as any, room.name, () => this.colonyRunnerFactory(room));
 
       if (!room.memory.initialised) {
         roomRunner.init();
@@ -38,5 +38,9 @@ export class GameRunner {
     roomRunners.forEach(roomRunner => roomRunner.tick());
     roomRunners.forEach(roomRunner => roomRunner.postTick());
     this.eventLoop.postTick();
+  }
+
+  public static getGameRunner(colonyRunnerFactory: (room: Room) => ColonyRunner): GameRunner {
+    return new GameRunner(EventLoop.getEventLoop(), colonyRunnerFactory);
   }
 }

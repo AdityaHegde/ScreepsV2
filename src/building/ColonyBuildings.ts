@@ -1,7 +1,7 @@
 import {RoomBaseClass} from "../RoomBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
-import {ColonyPlan} from "../room-planner/ColonyPlan";
+import {ColonyPlan} from "../colony-planner/ColonyPlan";
 import {BuildingPrefabTypeToTypeMap} from "../preprocessing/ParserMetadata";
 import {EventLoop} from "../events/EventLoop";
 import {ConstructionSiteCreatedEventHandler} from "../events/ConstructionSiteCreatedEventHandler";
@@ -12,7 +12,7 @@ import {Logger} from "../utils/Logger";
 export type ConstructionType = [id: string, x: number, y: number];
 export type BuildingType = [id: string, x: number, y: number];
 
-export const MAX_CONCURRENT_SITES = 5;
+export const MAX_CONCURRENT_SITES = 100;
 
 @MemoryClass("buildings")
 export class ColonyBuildings extends RoomBaseClass {
@@ -62,7 +62,7 @@ export class ColonyBuildings extends RoomBaseClass {
 
     while (buildingPrefab && count <= MAX_CONCURRENT_SITES) {
       const buildingPos = buildingPrefab[1][this.cursor];
-      const result = buildingPos && this.room.createConstructionSite(buildingPos[0], buildingPos[1], structureType);
+      const result = buildingPos && this.room.createConstructionSite(buildingPos[1][0], buildingPos[1][1], structureType);
 
       if (result === OK) {
         EventLoop.getEventLoop().addEvent(ConstructionSiteCreatedEventHandler.getEvent(
@@ -71,7 +71,7 @@ export class ColonyBuildings extends RoomBaseClass {
         this.cursor++;
         count++;
       } else if (buildingPos) {
-        this.logger.log(`Failed to build ${structureType} at (${buildingPos.join(",")})`);
+        this.logger.log(`Failed to build ${structureType} at (${buildingPos.join(",")}) result=${result}`);
         break;
       }
 

@@ -1,5 +1,6 @@
 // converting json from build planner https://screeps.admon.dev/building-planner to usable memory object
 
+import "../src/globals/GlobalConstants";
 import {ParsePrefab} from "../src/preprocessing/ParsePrefab";
 import {PrefabJson} from "../src/preprocessing/ParserMetadata";
 import {promises} from "fs";

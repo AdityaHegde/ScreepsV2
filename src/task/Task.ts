@@ -5,6 +5,7 @@ import {Logger} from "../utils/Logger";
 import {ACTION_MODE, ERROR_TARGET_MODE, MOVE_MODE, TASK_DONE} from "../constants";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
+import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
 
 @MemoryClass("task")
 export class Task<TargetType extends BaseTargetType, TargetClass extends Target<TargetType>>
@@ -14,6 +15,7 @@ export class Task<TargetType extends BaseTargetType, TargetClass extends Target<
 
   public readonly target: TargetClass;
   public readonly targetPool: TargetPool<TargetType, TargetClass>;
+  public readonly pathFinder: ColonyPathFinder;
 
   /**
    * Count can be delayed by one tick
@@ -23,11 +25,12 @@ export class Task<TargetType extends BaseTargetType, TargetClass extends Target<
 
   public constructor(
     id: string, room: Room,
-    target: TargetClass, targetPool: TargetPool<TargetType, TargetClass>,
+    target: TargetClass, targetPool: TargetPool<TargetType, TargetClass>, pathFinder: ColonyPathFinder,
   ) {
     super(id, room);
     this.target = target;
     this.targetPool = targetPool;
+    this.pathFinder = pathFinder;
     this.logger.setRoom(this.room);
   }
 
@@ -93,16 +96,14 @@ export class Task<TargetType extends BaseTargetType, TargetClass extends Target<
       return true;
     }
 
-    if (creep.fatigue > 0) {
-      return false;
-    }
-
     this.logger.log(`mode=${MOVE_MODE} pos=(${creep.pos.x},${creep.pos.y}) toPos=(${target.pos.x},${target.pos.y}) range=${range}`);
 
-    creep.moveTo(target.pos, {
-      serializeMemory: true,
-      range,
-    });
+    // creep.moveTo(target.pos, {
+    //   serializeMemory: true,
+    //   range,
+    // });
+    this.pathFinder.resolveMove(creep);
+    this.pathFinder.move(creep, target.pos);
     return false;
   }
 

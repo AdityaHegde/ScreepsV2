@@ -5,19 +5,22 @@ import {MemoryClass} from "@memory/MemoryClass";
 import {ROOM_RUNNER_ID} from "../constants";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
 import {ColonyBuildings} from "../building/ColonyBuildings";
+import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
 
 @MemoryClass("runner")
 export class ColonyRunner extends RoomBaseClass {
   public readonly jobAssigner: JobAssigner;
   public readonly colonyBuildings: ColonyBuildings;
+  public readonly pathFinder: ColonyPathFinder;
 
   public constructor(
     id: string, room: Room,
-    jobAssigner: JobAssigner, colonyBuildings: ColonyBuildings,
+    jobAssigner: JobAssigner, colonyBuildings: ColonyBuildings, pathFinder: ColonyPathFinder,
   ) {
     super(id, room);
     this.jobAssigner = jobAssigner;
     this.colonyBuildings = colonyBuildings;
+    this.pathFinder = pathFinder;
     this.logger.setRoom(this.room);
   }
 
@@ -38,6 +41,7 @@ export class ColonyRunner extends RoomBaseClass {
   public tick(): void {
     // this.logger.log(`${this.room.energyAvailable}/${this.room.energyCapacityAvailable}`);
     this.colonyBuildings.run();
+    this.pathFinder.run();
     this.jobAssigner.tick();
   }
 
@@ -47,8 +51,8 @@ export class ColonyRunner extends RoomBaseClass {
   }
 
   public static getRoomRunner(
-    room: Room, jobAssigner: JobAssigner, colonyBuildings: ColonyBuildings,
+    room: Room, jobAssigner: JobAssigner, colonyBuildings: ColonyBuildings, pathFinder: ColonyPathFinder,
   ): ColonyRunner {
-    return new ColonyRunner(getIdFromRoom(room, ROOM_RUNNER_ID), room, jobAssigner, colonyBuildings);
+    return new ColonyRunner(getIdFromRoom(room, ROOM_RUNNER_ID), room, jobAssigner, colonyBuildings, pathFinder);
   }
 }

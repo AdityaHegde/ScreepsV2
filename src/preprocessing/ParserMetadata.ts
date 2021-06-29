@@ -1,5 +1,4 @@
-import "../GlobalConstants";
-import {ArrayPos, BuildingPrefab, Prefab} from "./Prefab";
+import {ArrayPos, BuildingPos, BuildingPrefab, Prefab} from "./Prefab";
 
 export interface Pos {
   x: number;
@@ -15,6 +14,7 @@ export interface PrefabJson {
   world: string;
   shard: string;
   rcl: number;
+  roads: Array<Array<ArrayPos>>;
   buildings: Record<BuildableStructureConstant, BuildingPrefabJson>;
 }
 
@@ -47,8 +47,8 @@ export const WALKABLE_BUILDING_TYPES = {
 }
 
 export class ParserMetadata {
-  public readonly prefab: Prefab = [[], []];
-  private readonly points = new Array<Pos>();
+  public readonly prefab: Prefab = [[], [], []];
+  private readonly buildingPosMap = new Map<string, BuildingPos>();
   private minX = Number.MAX_SAFE_INTEGER;
   private maxX = Number.MIN_SAFE_INTEGER;
   private minY = Number.MAX_SAFE_INTEGER;
@@ -73,13 +73,12 @@ export class ParserMetadata {
   }
 
   public addPosToBuilding(buildingPrefab: BuildingPrefab, pos: Pos): void {
-    const arrayPos: ArrayPos = [pos.x, pos.y];
+    const buildingPos: BuildingPos = [[], [pos.x, pos.y]];
     if (BuildingPrefabTypeToTypeMap[buildingPrefab[0]] === STRUCTURE_SPAWN && !this.spawnPos) {
-      this.spawnPos = arrayPos;
+      this.spawnPos = [pos.x, pos.y];
     }
 
-    buildingPrefab[1].push(arrayPos);
-    this.points.push(pos);
+    buildingPrefab[1].push(buildingPos);
 
     if (pos.x > this.maxX) {
       this.maxX = pos.x;
@@ -100,7 +99,7 @@ export class ParserMetadata {
 
   public normalize(): void {
     const centroid: ArrayPos = this.spawnPos ? [...this.spawnPos] : [
-      Math.round(this.xSum / this.points.length), Math.round(this.ySum / this.points.length),
+      Math.round(this.xSum / this.buildingPosMap.size), Math.round(this.ySum / this.buildingPosMap.size),
     ];
 
     this.maxX -= centroid[0];
@@ -109,12 +108,42 @@ export class ParserMetadata {
     this.minY -= centroid[1];
 
     this.prefab[1].forEach(rclPrefab => rclPrefab
-      .forEach(buildingPrefab => buildingPrefab[1].forEach(pos => {
-        pos[0] -= centroid[0]; pos[1] -= centroid[1];
+      .forEach(buildingPrefab => buildingPrefab[1].forEach(buildingPos => {
+        buildingPos[1][0] -= centroid[0]; buildingPos[1][1] -= centroid[1];
+        this.buildingPosMap.set(`${buildingPos[1][0]}-${buildingPos[1][1]}`, buildingPos);
       })));
 
     this.prefab[0] = [
       this.minY, this.maxX, this.maxY, this.minX,
     ];
+
+    this.processRoads(centroid);
+  }
+
+  private processRoads(centroid: ArrayPos): void {
+    this.prefab[2].forEach((road, roadIdx) => {
+      road.forEach((roadPos, roadPosIdx) => {
+        roadPos[0] -= centroid[0];
+        roadPos[1] -= centroid[1];
+        this.assignRoadPos(roadPos, roadIdx, roadPosIdx);
+      });
+    });
+    this.prefab[2].forEach((road, roadIdx) => {
+      road.forEach((roadPos, roadPosIdx) => {
+        // road structure should only have itself as pos
+        this.buildingPosMap.get(`${roadPos[0]}-${roadPos[1]}`)[0] = [[roadIdx, roadPosIdx]];
+      });
+    });
+  }
+
+  private assignRoadPos(roadPos: ArrayPos, roadIdx: number, roadPosIdx: number) {
+    for (let x = roadPos[0] - 1; x <= roadPos[0] + 1; x++) {
+      for (let y = roadPos[1] - 1; y <= roadPos[1] + 1; y++) {
+        const buildingPrefab = this.buildingPosMap.get(`${x}-${y}`);
+        if (buildingPrefab) {
+          buildingPrefab[0].push([roadIdx, roadPosIdx]);
+        }
+      }
+    }
   }
 }
