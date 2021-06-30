@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {EventLoop} from "../events/EventLoop";
 import {CreepCreatedEventHandler} from "../events/CreepCreatedEventHandler";
@@ -7,7 +7,7 @@ import {Logger} from "../utils/Logger";
 import {CreepPoolStrategy} from "./creep-pool-strategy/CreepPoolStrategy";
 
 @MemoryClass("creepSpawner")
-export class CreepSpawner extends RoomBaseClass {
+export class CreepSpawner extends ColonyBaseClass {
   public readonly creepNamePrefix: string;
   public readonly creepPartsManager: CreepPartsManager;
   public readonly creepPoolStrategy: CreepPoolStrategy;

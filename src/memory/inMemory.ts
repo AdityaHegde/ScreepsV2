@@ -29,7 +29,11 @@ export function inMemory<T>(
 
     descriptor.set = function(this: BaseClass, value: T) {
       // save the serialized value to memory and value to cache
-      this.memory[fieldName] = serializer.call(this, value);
+      if (value === undefined) {
+        delete this.memory[fieldName];
+      } else {
+        this.memory[fieldName] = serializer.call(this, value);
+      }
       this[cachedFieldName] = value;
     };
 

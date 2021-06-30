@@ -22,12 +22,12 @@ export class PathNavigator {
   }
 
   public move(creep: Creep, pos: RoomPosition): MoveReturnValue {
-    this.logger.setRoom(creep.room).setCreep(creep);
-
     creep.memory.lastPos = [creep.pos.x, creep.pos.y];
     creep.memory.lastRoadPosIdx = -1;
 
     if (creep.fatigue > 0) return MOVE_FAILED;
+
+    this.logger.setRoom(creep.room).setCreep(creep);
 
     // TODO: move this to creep creation to avoid checking this every move
     if (!creep.memory.pos) {
@@ -47,12 +47,12 @@ export class PathNavigator {
   }
 
   public resolveMove(creep: Creep): MoveReturnValue {
-    this.logger.setRoom(creep.room).setCreep(creep);
-
     if (!creep.memory.pos || !creep.memory.dest) return MOVE_FAILED;
     if (hasReachedRoadPos(creep.memory.pos, creep.memory.dest)) return MOVE_SUCCEEDED;
     if (creep.memory.lastRoadPosIdx >=0 &&
         creep.memory.lastPos[0] === creep.pos.x && creep.memory.lastPos[1] === creep.pos.y) return MOVE_FAILED;
+
+    this.logger.setRoom(creep.room).setCreep(creep);
 
     creep.memory.pos[1] += creep.memory.pos[1] < creep.memory.lastRoadPosIdx ? 1 : -1;
 
@@ -72,6 +72,11 @@ export class PathNavigator {
     }
 
     return MOVE_SUCCEEDED;
+  }
+
+  public resolveAndMove(creep: Creep, pos: RoomPosition): MoveReturnValue {
+    if (this.resolveMove(creep) === MOVE_COMPLETED) return MOVE_COMPLETED;
+    return this.move(creep, pos);
   }
 
   private acquireRoadPos(pos: RoomPosition): RoadPos {

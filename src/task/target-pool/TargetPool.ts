@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "../../RoomBaseClass";
+import {ColonyBaseClass} from "../../ColonyBaseClass";
 import {BaseTargetType, Target} from "../target/Target";
 import {inMemory} from "@memory/inMemory";
 import {MemoryClass} from "@memory/MemoryClass";
@@ -6,7 +6,7 @@ import {MemoryClass} from "@memory/MemoryClass";
 @MemoryClass("targetPool")
 export class TargetPool<
   TargetType extends BaseTargetType, TargetClass extends Target<any>,
-> extends RoomBaseClass {
+> extends ColonyBaseClass {
   protected readonly target: TargetClass;
 
   public freeTargets: Array<string>;

@@ -11,4 +11,8 @@ export class BaseClass {
   public constructor(id: string) {
     this.id = id;
   }
+
+  public destroy(): void {
+    delete Memory[(this.constructor as typeof BaseClass).memoryName]?.[this.id];
+  }
 }

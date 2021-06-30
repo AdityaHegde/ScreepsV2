@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {PathFinderData} from "./PathFinderData";
 import {PathBuilder} from "./PathBuilder";
@@ -8,7 +8,7 @@ import {inMemory} from "@memory/inMemory";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
 
 @MemoryClass("pathFinder")
-export class ColonyPathFinder extends RoomBaseClass {
+export class ColonyPathFinder extends ColonyBaseClass {
   public readonly pathFinderData: PathFinderData;
   public readonly pathBuilder: PathBuilder;
   public readonly pathNavigator: PathNavigator;
@@ -44,6 +44,10 @@ export class ColonyPathFinder extends RoomBaseClass {
 
   public resolveMove(creep: Creep): MoveReturnValue {
     return this.pathNavigator.resolveMove(creep);
+  }
+
+  public resolveAndMove(creep: Creep, pos: RoomPosition): MoveReturnValue {
+    return this.pathNavigator.resolveAndMove(creep, pos);
   }
 
   public run(): void {

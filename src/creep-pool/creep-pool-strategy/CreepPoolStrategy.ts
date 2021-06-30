@@ -1,9 +1,9 @@
-import {RoomBaseClass} from "../../RoomBaseClass";
+import {ColonyBaseClass} from "../../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 
 @MemoryClass("creepPoolStrategy")
-export class CreepPoolStrategy extends RoomBaseClass {
+export class CreepPoolStrategy extends ColonyBaseClass {
   @inMemory()
   public maxCreeps: number;
 

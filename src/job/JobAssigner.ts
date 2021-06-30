@@ -1,11 +1,11 @@
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {Job} from "./Job";
 import {MemoryClass} from "@memory/MemoryClass";
 import {JOB_ASSIGNER_ID} from "../constants";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
 
 @MemoryClass("assigner")
-export class JobAssigner extends RoomBaseClass {
+export class JobAssigner extends ColonyBaseClass {
   public readonly jobs: Array<Job>;
 
   public constructor(id: string, room: Room, jobs: Array<Job>) {

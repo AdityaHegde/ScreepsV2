@@ -1,11 +1,11 @@
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 import {Logger} from "../utils/Logger";
 import {CreepPoolStrategy} from "./creep-pool-strategy/CreepPoolStrategy";
 
 @MemoryClass("creepParts")
-export class CreepPartsManager extends RoomBaseClass {
+export class CreepPartsManager extends ColonyBaseClass {
   public readonly initParts: Array<BodyPartConstant>;
   public readonly creepParts: Array<BodyPartConstant>;
   public readonly powerPart: BodyPartConstant;

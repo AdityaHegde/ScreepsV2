@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 import {ColonyPlan} from "../colony-planner/ColonyPlan";
@@ -15,7 +15,7 @@ export type BuildingType = [id: string, x: number, y: number];
 export const MAX_CONCURRENT_SITES = 100;
 
 @MemoryClass("buildings")
-export class ColonyBuildings extends RoomBaseClass {
+export class ColonyBuildings extends ColonyBaseClass {
   public readonly colonyPlan: ColonyPlan;
 
   protected logger = new Logger("ColonyBuildings");

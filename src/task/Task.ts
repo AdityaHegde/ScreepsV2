@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "src/RoomBaseClass";
+import {ColonyBaseClass} from "src/ColonyBaseClass";
 import {BaseTargetType, Target} from "./target/Target";
 import {TargetPool} from "./target-pool/TargetPool";
 import {Logger} from "../utils/Logger";
@@ -9,7 +9,7 @@ import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
 
 @MemoryClass("task")
 export class Task<TargetType extends BaseTargetType, TargetClass extends Target<TargetType>>
-  extends RoomBaseClass {
+  extends ColonyBaseClass {
 
   protected logger = new Logger("Task");
 

@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "src/RoomBaseClass";
+import {ColonyBaseClass} from "src/ColonyBaseClass";
 import {CreepPool} from "../creep-pool/CreepPool";
 import {Task} from "src/task/Task";
 import {NEW_TASK_MODE, NO_SUB_TASK_MODE, TASK_DONE} from "../constants";
@@ -6,7 +6,7 @@ import {Logger} from "../utils/Logger";
 import {MemoryClass} from "@memory/MemoryClass";
 
 @MemoryClass("jobs")
-export class Job extends RoomBaseClass {
+export class Job extends ColonyBaseClass {
   public readonly creepPool: CreepPool;
   public readonly tasks: Array<Array<Task<any, any>>>;
 

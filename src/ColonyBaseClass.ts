@@ -1,6 +1,6 @@
 import {BaseClass} from "./BaseClass";
 
-export class RoomBaseClass extends BaseClass {
+export class ColonyBaseClass extends BaseClass {
   public static memoryName: string;
 
   public readonly room: Room;

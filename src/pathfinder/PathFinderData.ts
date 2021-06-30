@@ -2,10 +2,10 @@ import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 import {RoadPos} from "../preprocessing/Prefab";
 import {Road} from "./Road";
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 
 @MemoryClass("pathFinder")
-export class PathFinderData extends RoomBaseClass {
+export class PathFinderData extends ColonyBaseClass {
   /**
    * Map from different x/y that are adjacent to RoadPos
    */

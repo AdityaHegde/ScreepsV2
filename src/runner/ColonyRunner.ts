@@ -1,4 +1,4 @@
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {JobAssigner} from "../job/JobAssigner";
 import {Logger} from "../utils/Logger";
 import {MemoryClass} from "@memory/MemoryClass";
@@ -8,7 +8,7 @@ import {ColonyBuildings} from "../building/ColonyBuildings";
 import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
 
 @MemoryClass("runner")
-export class ColonyRunner extends RoomBaseClass {
+export class ColonyRunner extends ColonyBaseClass {
   public readonly jobAssigner: JobAssigner;
   public readonly colonyBuildings: ColonyBuildings;
   public readonly pathFinder: ColonyPathFinder;

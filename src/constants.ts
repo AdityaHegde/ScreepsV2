@@ -16,3 +16,5 @@ export const ACTION_MODE = "action";
 export const ERROR_TARGET_MODE = "errorTarget";
 export const NEW_TASK_MODE = "newTask";
 export const NO_SUB_TASK_MODE = "noSubTask";
+
+// Misc constants

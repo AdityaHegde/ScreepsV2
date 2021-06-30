@@ -26,6 +26,8 @@ export const OFFSET_TO_DIRECTION: {
   "-1__-1": TOP_LEFT
 };
 export const ROTATE_180_DEG = 4;
+export const ROTATE_CLOCKWISE = 1;
+export const ROTATE_ANTI_CLOCKWISE = 7;
 
 export function getKeyFromArrayPos(arrayPos: ArrayPos): string {
   return `${arrayPos[0]}__${arrayPos[1]}`;
@@ -38,6 +40,11 @@ export function getDirectionBetweenPos(sourcePos: ArrayPos, destPos: ArrayPos): 
   const dx = Math.sign(destPos[0] - sourcePos[0]);
   const dy = Math.sign(destPos[1] - sourcePos[1]);
   return OFFSET_TO_DIRECTION[getKeyFromArrayXY(dx, dy)];
+}
+
+export function getPosTowardsDirection(sourcePos: ArrayPos, direction: DirectionConstant): ArrayPos {
+  const offset = DIRECTION_TO_OFFSET[direction];
+  return [sourcePos[0] + offset[0], sourcePos[1] + offset[1]];
 }
 
 export function isAdjacentToPos(sourcePos: ArrayPos, destPos: ArrayPos): (DirectionConstant | -2) {

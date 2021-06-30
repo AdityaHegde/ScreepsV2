@@ -1,5 +1,5 @@
 import {MemoryClass} from "@memory/MemoryClass";
-import {RoomBaseClass} from "../RoomBaseClass";
+import {ColonyBaseClass} from "../ColonyBaseClass";
 import {inMemory} from "@memory/inMemory";
 import {ArrayPos, BuildingPlan, Prefab} from "../preprocessing/Prefab";
 import {BunkerPrefab} from "../data/Bunker";
@@ -13,7 +13,7 @@ import {COLONY_PLAN_ID} from "../constants";
 import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
 
 @MemoryClass("plan")
-export class ColonyPlan extends RoomBaseClass {
+export class ColonyPlan extends ColonyBaseClass {
   @inMemory(() => [])
   public rclPrefabs: Array<Array<BuildingPlan>>;
 

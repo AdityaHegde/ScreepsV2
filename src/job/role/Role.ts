@@ -1,5 +1,5 @@
-import {RoomBaseClass} from "../../RoomBaseClass";
+import {ColonyBaseClass} from "../../ColonyBaseClass";
 
-export class Role extends RoomBaseClass {
+export class Role extends ColonyBaseClass {
 
 }
