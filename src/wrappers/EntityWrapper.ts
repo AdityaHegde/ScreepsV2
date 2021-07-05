@@ -1,13 +1,14 @@
 import {BaseClass} from "../BaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
-import {Globals} from "../globals/Globals";
+import {Globals} from "@globals/Globals";
 
 export interface BaseEntityType {
   id: string;
-}
-export interface BasePosEntityType extends BaseEntityType {
   pos: RoomPosition;
+}
+export interface StoreEntityType extends BaseEntityType {
+  store: Store<any, any>;
 }
 
 @MemoryClass("entity")
@@ -16,9 +17,11 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
 
   @inMemory()
   public target: string;
-  public targetEntity: BasePosEntityType;
+  public targetEntity: BaseEntityType;
   @inMemory()
   public weight: number;
+  @inMemory()
+  public currentWeight: number;
 
   @inMemory()
   public task: number;

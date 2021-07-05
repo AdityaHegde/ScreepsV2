@@ -2,7 +2,7 @@ import {EventEntryBase, EventHandler} from "./EventEntryBase";
 import {Globals} from "../globals/Globals";
 import {ColonyBuildings} from "../building/ColonyBuildings";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
-import {COLONY_BUILDINGS_ID, DEPOSIT_TARGET_POOL_ID} from "../constants";
+import {COLONY_BUILDINGS_ID, DEPOSIT_ID} from "../constants";
 import {TargetPool} from "../task/target-pool/TargetPool";
 
 export const StructureBuiltEventType = "StructureBuilt";
@@ -15,8 +15,8 @@ export interface StructureBuiltEvent extends EventEntryBase {
 }
 
 const StructureToTargetMap = {
-  [STRUCTURE_SPAWN]: DEPOSIT_TARGET_POOL_ID,
-  [STRUCTURE_CONTAINER]: DEPOSIT_TARGET_POOL_ID,
+  [STRUCTURE_SPAWN]: DEPOSIT_ID,
+  [STRUCTURE_CONTAINER]: DEPOSIT_ID,
 };
 
 export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent> {

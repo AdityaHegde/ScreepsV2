@@ -1,9 +1,7 @@
 import {EventEntryBase, EventHandler} from "./EventEntryBase";
-import {Globals} from "../globals/Globals";
-import {DEPOSIT_TARGET_POOL_ID, JOB_ASSIGNER_ID} from "../constants";
-import {JobAssigner} from "../job/JobAssigner";
-import {TargetPool} from "../task/target-pool/TargetPool";
-import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {Globals} from "@globals/Globals";
+import {CreepGroup} from "../entity-group/group/CreepGroup";
+import {CreepWrapper} from "@wrappers/CreepWrapper";
 
 export const CreepCreatedEventEntryType = "CreepCreated";
 
@@ -11,7 +9,7 @@ export interface CreepCreatedEventEntry extends EventEntryBase {
   type: typeof CreepCreatedEventEntryType;
 
   creepName: string;
-  creepPoolId: string;
+  groupId: string;
 }
 
 export class CreepCreatedEventHandler extends EventHandler<CreepCreatedEventEntry> {
@@ -21,19 +19,17 @@ export class CreepCreatedEventHandler extends EventHandler<CreepCreatedEventEntr
       return true;
     }
 
-    const room = Game.rooms[eventEntry.roomName];
-    Globals.getGlobal<JobAssigner>(JobAssigner as any, getIdFromRoom(room, JOB_ASSIGNER_ID))
-      ?.assign(creep, eventEntry.creepPoolId);
-    Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, DEPOSIT_TARGET_POOL_ID))
-      ?.updateTargets();
+    Globals.getGlobal<CreepGroup>(CreepGroup as any, eventEntry.groupId)?.addEntityWrapper(
+      CreepWrapper.getEntityWrapper(creep.id),
+    );
 
     return false;
   }
 
-  public static getEvent(roomName: string, creepName: string, creepPoolId: string): CreepCreatedEventEntry {
+  public static getEvent(roomName: string, creepName: string, groupId: string): CreepCreatedEventEntry {
     return {
       type: CreepCreatedEventEntryType,
-      roomName, creepName, creepPoolId,
+      roomName, creepName, groupId,
     };
   }
 }

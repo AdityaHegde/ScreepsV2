@@ -1,8 +1,8 @@
 import {EntityWrapper} from "./EntityWrapper";
-import {PositionsEntity} from "../utils/rearrangePositions";
+import {PositionsEntity} from "@utils/rearrangePositions";
 import {inMemory} from "@memory/inMemory";
 import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
-import {initPositionsEntry} from "../utils/initPositionsEntry";
+import {initPositionsEntry} from "@utils/initPositionsEntry";
 
 export class ControllerWrapper extends EntityWrapper<StructureController> implements PositionsEntity {
   @inMemory()

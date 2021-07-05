@@ -1,13 +1,13 @@
 import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
-import {ColonyPlan} from "../colony-planner/ColonyPlan";
+import {ColonyPlanner} from "../colony-planner/ColonyPlanner";
 import {BuildingPrefabTypeToTypeMap} from "../preprocessing/ParserMetadata";
 import {EventLoop} from "../events/EventLoop";
 import {ConstructionSiteCreatedEventHandler} from "../events/ConstructionSiteCreatedEventHandler";
-import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {COLONY_BUILDINGS_ID} from "../constants";
-import {Logger} from "../utils/Logger";
+import {Logger} from "@utils/Logger";
 
 export type ConstructionType = [id: string, x: number, y: number];
 export type BuildingType = [id: string, x: number, y: number];
@@ -16,16 +16,16 @@ export const MAX_CONCURRENT_SITES = 100;
 
 @MemoryClass("buildings")
 export class ColonyBuildings extends ColonyBaseClass {
-  public readonly colonyPlan: ColonyPlan;
+  public readonly colonyPlanner: ColonyPlanner;
 
   protected logger = new Logger("ColonyBuildings");
 
   public constructor(
     id: string, room: Room,
-    colonyPlan: ColonyPlan,
+    colonyPlanner: ColonyPlanner,
   ) {
     super(id, room);
-    this.colonyPlan = colonyPlan;
+    this.colonyPlanner = colonyPlanner;
     this.logger.setRoom(room);
   }
 
@@ -40,7 +40,7 @@ export class ColonyBuildings extends ColonyBaseClass {
   public prevLevel: number;
 
   public init(): void {
-    this.colonyPlan.plan();
+    // nothing
   }
 
   public run(): void {
@@ -51,11 +51,11 @@ export class ColonyBuildings extends ColonyBaseClass {
     }
 
     if (this.siteCount <= MAX_CONCURRENT_SITES &&
-        this.buildingCursor >= this.colonyPlan.rclPrefabs[this.room.controller.level - 1].length) {
+        this.buildingCursor >= this.colonyPlanner.rclPrefabs[this.room.controller.level - 1].length) {
       return;
     }
 
-    const rclPrefab = this.colonyPlan.rclPrefabs[this.room.controller.level - 1];
+    const rclPrefab = this.colonyPlanner.rclPrefabs[this.room.controller.level - 1];
     let buildingPrefab = rclPrefab[this.buildingCursor];
     let structureType = buildingPrefab ? BuildingPrefabTypeToTypeMap[buildingPrefab[0]] : null;
     let count = this.siteCount;
@@ -86,7 +86,7 @@ export class ColonyBuildings extends ColonyBaseClass {
     this.siteCount = count;
   }
 
-  public static getColonyBuildings(room: Room, colonyPlan: ColonyPlan): ColonyBuildings {
-    return new ColonyBuildings(getIdFromRoom(room, COLONY_BUILDINGS_ID), room, colonyPlan);
+  public static getColonyBuildings(room: Room, colonyPlanner: ColonyPlanner): ColonyBuildings {
+    return new ColonyBuildings(getIdFromRoom(room, COLONY_BUILDINGS_ID), room, colonyPlanner);
   }
 }

@@ -4,7 +4,7 @@ import {getIdFromRoom} from "../utils/getIdFromRoom";
 import {SourceTarget} from "../task/target/SourceTarget";
 import {TargetPool} from "../task/target-pool/TargetPool";
 import {DepositTarget, DepositTargetType} from "../task/target/DepositTarget";
-import {CONSTRUCT_TARGET_POOL_ID, DEPOSIT_TARGET_POOL_ID} from "../constants";
+import {CONSTRUCT_ENTITY_POOL_ID, DEPOSIT_ID} from "../constants";
 import {UpgradeTarget} from "../task/target/UpgradeTarget";
 import {ConstructTarget} from "../task/target/ConstructTarget";
 import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
@@ -20,7 +20,7 @@ export function getSimpleDepositTask(room: Room, pathFinder: ColonyPathFinder): 
   const depositTarget = new DepositTarget(RESOURCE_ENERGY, [STRUCTURE_SPAWN, STRUCTURE_CONTAINER]);
   return Globals.addGlobal(new Task(getIdFromRoom(room, "deposit"), room, depositTarget,
     Globals.addGlobal(new TargetPool<DepositTargetType, DepositTarget>(
-      getIdFromRoom(room, DEPOSIT_TARGET_POOL_ID), room, depositTarget)), pathFinder));
+      getIdFromRoom(room, DEPOSIT_ID), room, depositTarget)), pathFinder));
 }
 
 export function getSimpleUpgradeTask(room: Room, pathFinder: ColonyPathFinder): Task<StructureController, UpgradeTarget> {
@@ -34,5 +34,5 @@ export function getSimpleConstructTask(room: Room, pathFinder: ColonyPathFinder)
   const constructTarget = new ConstructTarget();
   return Globals.addGlobal(new Task(getIdFromRoom(room, "construct"), room, constructTarget,
     Globals.addGlobal(new TargetPool<ConstructionSite, ConstructTarget>(
-      getIdFromRoom(room, CONSTRUCT_TARGET_POOL_ID), room, constructTarget)), pathFinder));
+      getIdFromRoom(room, CONSTRUCT_ENTITY_POOL_ID), room, constructTarget)), pathFinder));
 }

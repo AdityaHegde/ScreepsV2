@@ -1,7 +1,8 @@
-import {BasePosEntityType, EntityWrapper} from "./EntityWrapper";
+import {EntityWrapper} from "./EntityWrapper";
 import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
 import {RoadConnectionEntry} from "../pathfinder/Road";
 import {inMemory} from "@memory/inMemory";
+import {HaulJobParams} from "../entity-group/group/haul/HaulJob";
 
 export class CreepWrapper extends EntityWrapper<Creep> {
   @inMemory()
@@ -17,6 +18,8 @@ export class CreepWrapper extends EntityWrapper<Creep> {
   public lastPos: ArrayPos;
   @inMemory()
   public lastRoadPosIdx: number;
+  @inMemory()
+  public haulJob: HaulJobParams;
 
   public hasReachedDest(): boolean {
     return this.pos[0] === this.dest[0] && this.pos[1] === this.dest[1];

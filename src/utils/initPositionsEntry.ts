@@ -6,7 +6,7 @@ import {
   ROTATE_ANTI_CLOCKWISE,
   ROTATE_CLOCKWISE,
   rotateDirection
-} from "../pathfinder/PathUtils";
+} from "@pathfinder/PathUtils";
 import {PositionsEntity} from "./rearrangePositions";
 
 export function initPositionsEntry(

@@ -2,7 +2,7 @@ import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {PathFinderData} from "./PathFinderData";
 import {PathBuilder} from "./PathBuilder";
-import {ArrayPos} from "../preprocessing/Prefab";
+import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
 import {MoveReturnValue, PathNavigator} from "./PathNavigator";
 import {inMemory} from "@memory/inMemory";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
@@ -12,11 +12,6 @@ export class ColonyPathFinder extends ColonyBaseClass {
   public readonly pathFinderData: PathFinderData;
   public readonly pathBuilder: PathBuilder;
   public readonly pathNavigator: PathNavigator;
-
-  @inMemory(() => [])
-  public pendingRoads: Array<Array<ArrayPos>>;
-
-  public addedRoad = false;
 
   public constructor(
     id: string, room: Room, pathFinderData: PathFinderData,
@@ -29,13 +24,8 @@ export class ColonyPathFinder extends ColonyBaseClass {
     this.pathNavigator = pathNavigator;
   }
 
-  public addRoad(rawRoad: Array<ArrayPos>): void {
-    if (this.addedRoad) {
-      this.pendingRoads.push(rawRoad);
-    } else {
-      this.addedRoad = true;
-      this.pathBuilder.addRoad(rawRoad);
-    }
+  public addRoad(rawRoad: Array<ArrayPos>): RoadPos {
+    return this.pathBuilder.addRoad(rawRoad);
   }
 
   public move(creep: Creep, pos: RoomPosition): MoveReturnValue {
@@ -50,9 +40,8 @@ export class ColonyPathFinder extends ColonyBaseClass {
     return this.pathNavigator.resolveAndMove(creep, pos);
   }
 
-  public run(): void {
-    if (this.addedRoad || this.pendingRoads.length === 0) return;
-    this.pathBuilder.addRoad(this.pendingRoads.shift());
+  public acquireRoadPos(pos: RoomPosition): RoadPos {
+    return this.pathNavigator.acquireRoadPos(pos);
   }
 
   public static getColonyPathFinder(room: Room): ColonyPathFinder {

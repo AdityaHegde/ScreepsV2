@@ -15,8 +15,6 @@ export class GameRunner {
   }
 
   public run(): void {
-    this.logger.log(`tick=${Game.time}`);
-
     const roomRunners = new Array<ColonyRunner>();
 
     Object.values(Game.rooms).forEach((room) => {
@@ -26,16 +24,17 @@ export class GameRunner {
 
       const roomRunner = Globals.getGlobal<ColonyRunner>(ColonyRunner as any, room.name, () => this.colonyRunnerFactory(room));
 
-      if (!room.memory.initialised) {
-        roomRunner.init();
+      if (!roomRunner.init()) {
+        roomRunners.push(roomRunner);
       }
-
-      roomRunners.push(roomRunner);
     });
 
+    this.logger.log(`pre tick=${Game.time}`);
     roomRunners.forEach(roomRunner => roomRunner.preTick());
     this.eventLoop.preTick();
+    this.logger.log(`tick=${Game.time}`);
     roomRunners.forEach(roomRunner => roomRunner.tick());
+    this.logger.log(`post tick=${Game.time}`);
     roomRunners.forEach(roomRunner => roomRunner.postTick());
     this.eventLoop.postTick();
   }

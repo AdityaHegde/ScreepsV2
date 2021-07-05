@@ -41,10 +41,10 @@ export class Globals {
   }
 
   private getGlobalsForClazz(Clazz: typeof BaseClass) {
-    if (!this.globalInstances.has(Clazz.memoryName)) {
-      this.globalInstances.set(Clazz.memoryName, new Map());
+    if (!this.globalInstances.has(Clazz.className)) {
+      this.globalInstances.set(Clazz.className, new Map());
     }
 
-    return  this.globalInstances.get(Clazz.memoryName);
+    return this.globalInstances.get(Clazz.className);
   }
 }

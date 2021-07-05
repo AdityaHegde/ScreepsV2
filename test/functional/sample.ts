@@ -32,7 +32,7 @@ import {execSync} from "child_process";
   });
 
   await server.start();
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 50; i++) {
     await server.tick();
     const newNotifications = (await bot.newNotifications)
     newNotifications.forEach(({ message }) => console.log(`[notification] ${message.join ? message.join(" ") : message}`));

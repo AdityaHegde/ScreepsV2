@@ -1,24 +1,29 @@
-import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
-import {EntityWrapper} from "../wrappers/EntityWrapper";
 import {inMemory} from "@memory/inMemory";
-import {Globals} from "../globals/Globals";
-import {CreepWrapper} from "../wrappers/CreepWrapper";
+import {Globals} from "@globals/Globals";
+import {ColonyBaseClass} from "../../ColonyBaseClass";
+import {EntityWrapper} from "@wrappers/EntityWrapper";
+import {GROUPS_MEMORY_NAME} from "../../constants";
+import {Logger} from "@utils/Logger";
 
-@MemoryClass("groups")
+@MemoryClass(GROUPS_MEMORY_NAME)
 export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends ColonyBaseClass {
   @inMemory(() => [])
   public entityWrapperIds: Array<string>;
-  public entityWrappers: Array<EntityWrapperType>;
+  public entityWrappers = new Array<EntityWrapperType>();
 
   public readonly EntityWrapperClass: typeof EntityWrapper;
+
+  protected readonly logger = new Logger("EntityGroup");
 
   public init(): void {
     // nothing
   }
 
   public preTick(): void {
-    // nothing
+    this.forEachEntityWrapper(() => {
+      // nothing
+    });
   }
 
   public tick(): void {

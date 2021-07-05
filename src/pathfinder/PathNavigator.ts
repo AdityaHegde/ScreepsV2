@@ -1,5 +1,5 @@
 import {PathFinderData} from "./PathFinderData";
-import {getKeyFromArrayXY, hasReachedRoadPos, hasReachedRoadPosIdx} from "./PathUtils";
+import {DIRECTION_OFFSETS, getKeyFromArrayXY, hasReachedRoadPos, hasReachedRoadPosIdx} from "./PathUtils";
 import {RoadPos} from "../preprocessing/Prefab";
 import {RoadConnectionEntry} from "./Road";
 import {Logger} from "../utils/Logger";
@@ -79,12 +79,16 @@ export class PathNavigator {
     return this.move(creep, pos);
   }
 
-  private acquireRoadPos(pos: RoomPosition): RoadPos {
+  public acquireRoadPos(pos: RoomPosition): RoadPos {
     const key = getKeyFromArrayXY(pos.x, pos.y);
-    if (this.pathFinderData.posToRoadMap[key]?.length) {
-      return [...this.pathFinderData.posToRoadMap[key][0]];
-    } else if (this.pathFinderData.roadPosMap[key]?.length) {
+    if (this.pathFinderData.roadPosMap[key]?.length) {
       return [...this.pathFinderData.roadPosMap[key][0]];
+    }
+    for (const directionOffset of DIRECTION_OFFSETS) {
+      const dirKey = getKeyFromArrayXY(pos.x+directionOffset[0], pos.y+directionOffset[1]);
+      if (!(dirKey in this.pathFinderData.roadPosMap)) {
+        return [...this.pathFinderData.roadPosMap[dirKey][0]];
+      }
     }
   }
 

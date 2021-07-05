@@ -1,4 +1,4 @@
-export type ArrayPos = [x: number, y: number];
+export type ArrayPos = [x: number, y: number, roomName?: string];
 export type RoadPos = [roadIdx: number, roadPosIdx: number, direction?: number];
 export type BuildingPos = [Array<RoadPos>, ArrayPos];
 export type BuildingPrefab = [

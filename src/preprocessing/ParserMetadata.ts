@@ -19,9 +19,9 @@ export interface PrefabJson {
 }
 
 export const BuildingPrefabTypeToTypeMap: Array<BuildableStructureConstant> = [
+  STRUCTURE_CONTAINER,
   STRUCTURE_EXTENSION,
   STRUCTURE_SPAWN,
-  STRUCTURE_CONTAINER,
   STRUCTURE_LINK,
   STRUCTURE_STORAGE,
   STRUCTURE_TERMINAL,

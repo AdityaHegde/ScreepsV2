@@ -1,4 +1,4 @@
-import {ArrayPos} from "../preprocessing/Prefab";
+import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
 import {DIRECTION_OFFSETS, getKeyFromArrayPos, getKeyFromArrayXY} from "./PathUtils";
 import {Road} from "./Road";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
@@ -13,7 +13,7 @@ export class PathBuilder {
     this.pathFinderData = colonyPathFinder;
   }
 
-  public addRoad(arrayOfPos: Array<ArrayPos>): void {
+  public addRoad(arrayOfPos: Array<ArrayPos>): RoadPos {
     let lastStartIdx = 0;
     let lastDuplicateRoadIdx = -1;
     const roadIntersectionsMap = new Map<number, RoadIntersections>();
@@ -73,12 +73,15 @@ export class PathBuilder {
     roadIntersectionsMap.forEach((value) => {
       hasRoad ||= value.count > 1;
     });
+    let lastRoad = this.pathFinderData.roads[this.pathFinderData.roads.length - 1];
     if (!hasRoad) {
-      this.addRoadFromRawRoad(arrayOfPos.slice(lastStartIdx), roadIntersectionsMap, lastStartIdx);
+      lastRoad = this.addRoadFromRawRoad(arrayOfPos.slice(lastStartIdx), roadIntersectionsMap, lastStartIdx);
     }
+
+    return [lastRoad.roadIdx, lastRoad.roadDirections.length - 1];
   }
 
-  private addRoadFromRawRoad(rawRoad: Array<ArrayPos>, roadIntersectionsMap: Map<number, RoadIntersections>, startIndex: number) {
+  private addRoadFromRawRoad(rawRoad: Array<ArrayPos>, roadIntersectionsMap: Map<number, RoadIntersections>, startIndex: number): Road {
     const road = new Road(getIdFromRoom(this.pathFinderData.room, `${this.pathFinderData.roadIds.length}`),
       this.pathFinderData.roadIds.length).addArrayOfPos(rawRoad);
     this.pathFinderData.roads.push(road);
@@ -86,20 +89,22 @@ export class PathBuilder {
     rawRoad.forEach((rawRoadPos, roadPosIdx) => this.addRawRoadPos(rawRoadPos, road.roadIdx, roadPosIdx));
 
     this.addRoadConnections(road, roadIntersectionsMap, startIndex);
+
+    return road;
   }
 
   private addRawRoadPos(rawRoadPos: ArrayPos, roadIdx: number, roadPosIdx: number): void {
-    DIRECTION_OFFSETS.forEach((directionOffset) => {
-      const key = getKeyFromArrayXY(rawRoadPos[0]+directionOffset[0], rawRoadPos[1]+directionOffset[1]);
-      if (!(key in this.pathFinderData.roadPosMap)) {
-        this.pathFinderData.posToRoadMap[key] ??= [];
-        this.pathFinderData.posToRoadMap[key].push([roadIdx, roadPosIdx]);
-      }
-    });
+    // DIRECTION_OFFSETS.forEach((directionOffset) => {
+    //   const key = getKeyFromArrayXY(rawRoadPos[0]+directionOffset[0], rawRoadPos[1]+directionOffset[1]);
+    //   if (!(key in this.pathFinderData.roadPosMap)) {
+    //     this.pathFinderData.posToRoadMap[key] ??= [];
+    //     this.pathFinderData.posToRoadMap[key].push([roadIdx, roadPosIdx]);
+    //   }
+    // });
     const roadKey = getKeyFromArrayPos(rawRoadPos);
     this.pathFinderData.roadPosMap[roadKey] ??= [];
     this.pathFinderData.roadPosMap[roadKey].push([roadIdx, roadPosIdx]);
-    delete this.pathFinderData.posToRoadMap[roadKey];
+    // delete this.pathFinderData.posToRoadMap[roadKey];
   }
 
   private addRoadConnections(road: Road, roadIntersectionsMap: Map<number, RoadIntersections>, startIndex: number) {
