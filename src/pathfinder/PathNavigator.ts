@@ -54,7 +54,7 @@ export class PathNavigator {
 
     this.logger.setRoom(creep.room).setCreep(creep);
 
-    creep.memory.pos[1] += creep.memory.pos[1] < creep.memory.lastRoadPosIdx ? 1 : -1;
+    this.pathFinderData.roads[creep.memory.pos[0]].updatePos(creep.memory.pos, creep.memory.lastRoadPosIdx);
 
     if (creep.memory.pos[0] === creep.memory.dest[0]) {
       if (hasReachedRoadPosIdx(creep.memory.pos, creep.memory.dest)) return MOVE_COMPLETED;
@@ -83,6 +83,8 @@ export class PathNavigator {
     const key = getKeyFromArrayXY(pos.x, pos.y);
     if (this.pathFinderData.roadPosMap[key]?.length) {
       return [...this.pathFinderData.roadPosMap[key][0]];
+    } else if (this.pathFinderData.posToRoadMap[key]?.length) {
+      return [...this.pathFinderData.posToRoadMap[key][0]];
     }
     for (const directionOffset of DIRECTION_OFFSETS) {
       const dirKey = getKeyFromArrayXY(pos.x+directionOffset[0], pos.y+directionOffset[1]);

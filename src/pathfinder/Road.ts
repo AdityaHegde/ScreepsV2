@@ -67,15 +67,19 @@ export class Road extends BaseClass {
     while (this.connections.length <= toRoadIdx) {
       this.connections.push([]);
     }
-    this.connections[toRoadIdx].push(atRoadPosIdx);
-    // this.connections[toRoadIdx] = this.connections[toRoadIdx].sort(((a, b) => a - b));
+    if (this.connections[toRoadIdx].indexOf(atRoadPosIdx) === -1) {
+      this.connections[toRoadIdx].push(atRoadPosIdx);
+    }
   }
 
   public addIndirectConnection(toRoadIdx: number, viaRoadIdx: number, distance: number): void {
     while (this.indirectConnections.length <= toRoadIdx) {
       this.indirectConnections.push([]);
     }
-    this.indirectConnections[toRoadIdx].push([viaRoadIdx, distance]);
+
+    if (this.indirectConnections[toRoadIdx].findIndex(indirectConnection => indirectConnection[0] === toRoadIdx) === -1) {
+      this.indirectConnections[toRoadIdx].push([viaRoadIdx, distance]);
+    }
   }
 
   public getConnection(curPos: RoadPos, destRoadIdx: number): RoadConnectionEntry {
@@ -91,9 +95,24 @@ export class Road extends BaseClass {
     return this.connections[destRoadIdx][destRoadConnectionIdx];
   }
 
+  public shouldMoveUpThePath(curPos: RoadPos, destRoadPosIdx: number): boolean {
+    let moveUpThPath = curPos[1] < destRoadPosIdx;
+    if (this.isCircular && Math.abs(curPos[1] - destRoadPosIdx) > (this.roadDirections.length / 2)) {
+      moveUpThPath = !moveUpThPath;
+    }
+    return moveUpThPath;
+  }
+
   public getMoveDirection(curPos: RoadPos, destRoadPosIdx: number): DirectionConstant {
-    // console.log("getMoveDirection", curPos[1], destRoadPosIdx, this.roadDirections[curPos[1]]);
-    return this.roadDirections[curPos[1]][curPos[1] < destRoadPosIdx ? 0 : 1] as DirectionConstant;
+    const direction = this.shouldMoveUpThePath(curPos, destRoadPosIdx) ? 0 : 1;
+    curPos[1] = (curPos[1] === 0 && direction === 1) ? (this.roadDirections.length - 1) :
+      (curPos[1] === this.roadDirections.length - 1 && direction === 0) ? 0 : curPos[1];
+    // console.log("getMoveDirection", `${curPos[1]} => ${destRoadPosIdx}`, direction, this.roadDirections[curPos[1]]);
+    return this.roadDirections[curPos[1]][direction] as DirectionConstant;
+  }
+
+  public updatePos(pos: RoadPos, destRoadPosIdx: number): void {
+    pos[1] += this.shouldMoveUpThePath(pos, destRoadPosIdx) ? 1 : -1;
   }
 
   private hasDirectConnection(destRoadIdx: number): boolean {

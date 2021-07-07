@@ -1,5 +1,8 @@
-export function getAverage(entries: Array<number>): number {
-  return entries.reduce((sum, entry) => sum + entry, 0) / entries.length;
+export function getAverage<T>(
+  entries: Array<T>, valueGetter: (a: T, idx: number) => number = (a: T) => a as any,
+): number {
+  if (!entries?.length) return 0;
+  return entries.reduce((sum: number, entry: T, idx: number) => sum + valueGetter(entry, idx), 0) / entries.length;
 }
 
 export function findInArray<T>(

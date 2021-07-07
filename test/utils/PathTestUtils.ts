@@ -1,5 +1,6 @@
-import {DIRECTION_TO_OFFSET, getKeyFromArrayXY} from "../../src/pathfinder/PathUtils";
+import {DIRECTION_TO_OFFSET, getKeyFromArrayXY} from "@pathfinder/PathUtils";
 import {ArrayPos, RoadPos} from "../../src/preprocessing/Prefab";
+import _ from "lodash";
 
 export const MAX_X = 20;
 export const MAX_Y = 20;
@@ -35,7 +36,7 @@ export function visualize(
     let str = "";
     for (let x = 0; x < maxY; x++) {
       const key = getKeyFromArrayXY(x, y);
-      const chars = (key in posToRoadMap) ? posToRoadMap[key].map(roadPos => roadPos[0]): " ";
+      const chars = (key in posToRoadMap) ? _.uniq(posToRoadMap[key].map(roadPos => roadPos[0])): " ";
       str += chars;
       str += grid[x]?.[y] ? `(${grid[x]?.[y]})` : "";
       for (let k = 0; k < 4 - chars.length; k++) {

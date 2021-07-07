@@ -1,14 +1,14 @@
 import {MemoryMockTestBase} from "../../utils/MemoryMockTestBase";
 import {CreepMovementMocks} from "../../utils/CreepMovementMocks";
 import {DataProviderData} from "../../utils/TestBase";
-import {PathFinderData} from "../../../src/pathfinder/PathFinderData";
-import {PathBuilder} from "../../../src/pathfinder/PathBuilder";
-import {MOVE_COMPLETED, MoveReturnValue, PathNavigator} from "../../../src/pathfinder/PathNavigator";
+import {PathFinderData} from "@pathfinder/PathFinderData";
+import {PathBuilder} from "@pathfinder/PathBuilder";
+import {MOVE_COMPLETED, PathNavigator} from "@pathfinder/PathNavigator";
 import {ArrayPos} from "../../../src/preprocessing/Prefab";
 import {deserializePath, MAX_X, MAX_Y, visualize} from "../../utils/PathTestUtils";
 import should from "should";
 
-const MAX_TICKS = 10;
+const MAX_TICKS = 20;
 
 @MemoryMockTestBase.Suite
 export class PathNavigatorTest extends MemoryMockTestBase {
@@ -18,11 +18,28 @@ export class PathNavigatorTest extends MemoryMockTestBase {
     return {
       subData: [{
         args: [
-          ["01014x83x54x7", "01092x44x42x4"],
+          ["01014x83x54x7", "01092x44x42x4", "040624x42", "0407124x4221"],
           [ [1, 1], [2, 2], [3, 7] ],
-          [ [5, 5], [2, 8], [12, 6] ],
-          [ 4, 6, 9 ]
+          [ [5, 5], [2, 8], [11, 6] ],
+          [ 4, 6, 9 ],
         ],
+      }, {
+        args: [
+          ["05078822446", "070966882244", "09074466882", "070522446688"],
+          [ [4, 6], [6, 4], [10, 6], [6, 8] ],
+          [ [6, 6], [8, 4], [8, 8], [6, 10] ],
+          [ 2, 2, 2, 2 ],
+        ],
+      }, {
+        args: [
+          [
+            "05078822446", "070966882244", "09074466882", "070522446688",
+            "06088x5", "08086x5", "08064x5", "06062x5",
+          ],
+          [ [7, 9], [12, 10], [10, 2] ],
+          [ [1, 3], [2, 4], [12, 10] ],
+          [ 6, 10, 8 ],
+        ]
       }],
     };
   }
@@ -42,6 +59,8 @@ export class PathNavigatorTest extends MemoryMockTestBase {
     const actualRunForTicks = creeps.map(() => 0);
     const reachedCreeps = new Set<string>();
 
+    // visualize(MAX_X, MAX_Y, pathFinderData.roadPosMap, creepMovementMocks.grid);
+
     for (let i = 0; i < MAX_TICKS && reachedCreeps.size < creeps.length; i++) {
       console.log("Tick:", i);
       creeps.forEach((creep, idx) => {
@@ -54,7 +73,9 @@ export class PathNavigatorTest extends MemoryMockTestBase {
         pathNavigator.move(creep, targetRoomPositions[idx]);
       });
 
-      // visualize(MAX_X, MAX_Y, pathFinderData.roadPosMap, creepMovementMocks.grid);
+      // if (reachedCreeps.size < creeps.length) {
+      //   visualize(MAX_X, MAX_Y, pathFinderData.roadPosMap, creepMovementMocks.grid);
+      // }
     }
 
     should(actualRunForTicks).be.eql(runForTicks);

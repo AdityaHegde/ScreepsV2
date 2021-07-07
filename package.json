@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "npx rollup -c rollup.config.js",
+    "watch": "npx rollup -c rollup.config.js -w",
     "test": "./node_modules/.bin/nyc ./node_modules/.bin/gulp unit",
     "lint": "./node_modules/.bin/eslint default"
   },

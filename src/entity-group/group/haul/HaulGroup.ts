@@ -62,8 +62,8 @@ export class HaulGroup extends CreepGroup {
   private dropOffToTarget(creepWrapper: CreepWrapper) {
     const targetWrapper = getWrapperById(creepWrapper.haulJob[3]);
     if (creepWrapper.entity.transfer(targetWrapper.entity, creepWrapper.haulJob[4]) === OK) {
-      creepWrapper.haulJob = null;
-      creepWrapper.dest = null;
+      creepWrapper.haulJob = undefined;
+      creepWrapper.dest = undefined;
     }
   }
 

@@ -18,6 +18,7 @@ export class ColonyPlanner extends ColonyBaseClass {
   @inMemory(() => [])
   public rclPrefabs: Array<Array<BuildingPlan>>;
 
+  @inMemory(() => [])
   public rawCostMatrix: Array<number>;
   public costMatrix: CostMatrix;
   @inMemory()
@@ -74,8 +75,12 @@ export class ColonyPlanner extends ColonyBaseClass {
       case 2: RoadPlanner.getSourceRoadPlans(this).forEach(roadPlanner => roadPlanner.plan(this)); break;
     }
     this.stage--;
+    if (this.stage === 0) {
+      this.rawCostMatrix = undefined;
+      return false;
+    }
     this.rawCostMatrix = this.costMatrix.serialize();
-    return this.stage > 0;
+    return true;
   }
 
   public addBuildingPos(

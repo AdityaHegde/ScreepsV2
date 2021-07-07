@@ -24,6 +24,7 @@ export class CreepMovementMocks {
       name, pos, memory: Memory.creeps[name], fatigue: 0,
     }
     creep.move = (direction: DirectionConstant) => this.move(creep, direction);
+    this.grid[pos.x][pos.y] = name;
 
     return creep as Creep;
   }
