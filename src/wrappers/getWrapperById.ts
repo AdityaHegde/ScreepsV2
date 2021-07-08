@@ -1,11 +1,11 @@
-import {EntityWrapper} from "@wrappers/EntityWrapper";
+import {BaseEntityType, EntityWrapper} from "@wrappers/EntityWrapper";
 import {CreepWrapper} from "@wrappers/CreepWrapper";
 import {Globals} from "@globals/Globals";
 import {HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
 import {ControllerWrapper} from "@wrappers/ControllerWrapper";
 
-export function getWrapperById(id: string): EntityWrapper<any> {
-  const fromCache = Globals.getGlobal<EntityWrapper<any>>(EntityWrapper, id);
+export function getWrapperById(id: string): EntityWrapper<BaseEntityType> {
+  const fromCache = Globals.getGlobal<EntityWrapper<BaseEntityType>>(EntityWrapper, id);
   if (fromCache) return fromCache;
 
   const entity = Game.getObjectById(id);

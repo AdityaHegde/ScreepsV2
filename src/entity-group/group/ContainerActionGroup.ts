@@ -1,6 +1,6 @@
 import {CreepGroup} from "./CreepGroup";
 import {inMemory} from "@memory/inMemory";
-import {HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
+import {HarvestableEntityType, HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
 import {CreepWrapper} from "@wrappers/CreepWrapper";
 import {MOVE_COMPLETED} from "@pathfinder/PathNavigator";
 import {getIdxChecker, rearrangePositions, ShiftDirection} from "@utils/rearrangePositions";
@@ -10,10 +10,12 @@ import {EntityWrapper} from "@wrappers/EntityWrapper";
 import {CreepsSpawner} from "../creeps-manager/CreepsSpawner";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
 
-export class ContainerActionGroup extends CreepGroup {
+export class ContainerActionGroup<ContainerActionGroupTargetType extends
+  (ControllerWrapper | HarvestableEntityWrapper<HarvestableEntityType>)> extends CreepGroup {
+
   @inMemory()
   public targetId: string;
-  public target: ControllerWrapper | HarvestableEntityWrapper<any>;
+  public target: ContainerActionGroupTargetType;
 
   @inMemory()
   public containerId: string;
@@ -26,7 +28,7 @@ export class ContainerActionGroup extends CreepGroup {
   public constructor(
     id: string, room: Room,
     creepSpawner: CreepsSpawner, pathFinder: ColonyPathFinder,
-    target: ControllerWrapper | HarvestableEntityWrapper<any>,
+    target: ContainerActionGroupTargetType,
   ) {
     super(id, room, creepSpawner, pathFinder);
     this.target =  target;
@@ -34,7 +36,7 @@ export class ContainerActionGroup extends CreepGroup {
   }
 
   public tick(): void {
-    this.target = getWrapperById(this.targetId) as (ControllerWrapper | HarvestableEntityWrapper<any>);
+    this.target = getWrapperById(this.targetId) as ContainerActionGroupTargetType;
     this.container = this.containerId ? getWrapperById(this.containerId) as EntityWrapper<StructureContainer> : null;
 
     let reachedCreepWrapper: CreepWrapper;
@@ -42,9 +44,11 @@ export class ContainerActionGroup extends CreepGroup {
     this.forEachEntityWrapper((creepWrapper) => {
       if (creepWrapper.task === 0) {
         creepWrapper.dest = this.target.roadPos;
-        if (this.pathFinder.resolveAndMove(creepWrapper.entity, null) === MOVE_COMPLETED) {
+        if (this.pathFinder.resolveAndMove(creepWrapper, null) === MOVE_COMPLETED) {
           creepWrapper.task = 1;
+          creepWrapper.clearMovement();
           reachedCreepWrapper = creepWrapper;
+          this.logger.log(`reached ${creepWrapper.entity.pos.x},${creepWrapper.entity.pos.y}`);
         } else {
           return;
         }

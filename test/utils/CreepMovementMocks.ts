@@ -19,9 +19,9 @@ export class CreepMovementMocks {
   }
 
   public createCreep(name: string, pos: RoomPosition): Creep {
-    Memory.creeps[name] ??= {};
     const creep: any = {
-      name, pos, memory: Memory.creeps[name], fatigue: 0,
+      id: name,
+      name, pos, fatigue: 0,
     }
     creep.move = (direction: DirectionConstant) => this.move(creep, direction);
     this.grid[pos.x][pos.y] = name;

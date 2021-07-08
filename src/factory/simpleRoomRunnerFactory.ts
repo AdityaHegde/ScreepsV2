@@ -6,8 +6,8 @@ import {ColonyBuildings} from "../building/ColonyBuildings";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
 import {CreepSpawnQueue} from "../entity-group/creeps-manager/CreepSpawnQueue";
 import {GroupRunner} from "../runner/GroupRunner";
-import {getControllerUpgradeGroup, getHaulGroup, getSourceHarvestGroup} from "./groupsFactory";
-import {getHaulNetworks} from "./haulNetworkFactory";
+import {getBuildGroup, getControllerUpgradeGroup, getHaulGroup, getSourceHarvestGroup} from "./groupsFactory";
+import {getBuildNetworks, getHaulNetworks} from "./jobNetworkFactory";
 
 export function simpleRoomRunnerFactory(room: Room): ColonyRunner {
   const pathFinder = Globals.addGlobal(ColonyPathFinder.getColonyPathFinder(room));
@@ -17,7 +17,8 @@ export function simpleRoomRunnerFactory(room: Room): ColonyRunner {
     room,
     Globals.addGlobal(new GroupRunner(getIdFromRoom(room, "group"), room, [
       harvestGroups[0],
-      getHaulGroup(room, pathFinder, getHaulNetworks(room)),
+      getHaulGroup(room, pathFinder, getHaulNetworks(room, pathFinder)),
+      getBuildGroup(room, pathFinder, getBuildNetworks(room, pathFinder)),
       ...harvestGroups.slice(1),
       getControllerUpgradeGroup(room, pathFinder),
     ], creepSpawnQueue)),
@@ -26,13 +27,3 @@ export function simpleRoomRunnerFactory(room: Room): ColonyRunner {
     creepSpawnQueue,
   );
 }
-
-// Globals.addGlobal(JobAssigner.getJobAssigner(room, [
-//   Globals.addGlobal(new Job(
-//     getIdFromRoom(room, "harvester"), room, getSimpleHarvesterPool(room),
-//     [
-//       [getSimpleHarvestTask(room, pathFinder)],
-//       [getSimpleDepositTask(room, pathFinder), getSimpleConstructTask(room, pathFinder), getSimpleUpgradeTask(room, pathFinder)],
-//     ],
-//   )),
-// ])),

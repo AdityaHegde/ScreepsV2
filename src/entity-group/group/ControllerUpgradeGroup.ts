@@ -1,9 +1,11 @@
 import {ContainerActionGroup} from "./ContainerActionGroup";
 import {CreepWrapper} from "@wrappers/CreepWrapper";
+import {ControllerWrapper} from "@wrappers/ControllerWrapper";
 
-export class ControllerUpgradeGroup extends ContainerActionGroup {
+export class ControllerUpgradeGroup extends ContainerActionGroup<ControllerWrapper> {
   protected takeAction(creepWrapper: CreepWrapper): void {
-    creepWrapper.entity.upgradeController(this.target.entity);
+    this.logger.log(`status=${creepWrapper.entity.upgradeController(this.target.entity)} ` +
+      `resource=${creepWrapper.entity.store[RESOURCE_ENERGY]}`);
   }
 
   protected middleCreepAction(creepWrapper: CreepWrapper): void {

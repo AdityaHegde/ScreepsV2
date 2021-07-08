@@ -1,3 +1,6 @@
+export const ascendingOrder = (a: number, b: number): number => a - b;
+export const descendingOrder = (a: number, b: number): number => b - a;
+
 export function getAverage<T>(
   entries: Array<T>, valueGetter: (a: T, idx: number) => number = (a: T) => a as any,
 ): number {
@@ -8,7 +11,7 @@ export function getAverage<T>(
 export function findInArray<T>(
   array: Array<T>,
   valueGetter: (a: T, idx: number) => number = (a: T) => a as any,
-  checkFunc: (a: number, b: number, idx: number) => number = (a, b) => a - b,
+  checkFunc: (a: number, b: number, idx: number) => number = ascendingOrder,
 ): [element: T, idx: number, foundValue: number] {
   if (array.length === 0) return [null, -1, 0];
 

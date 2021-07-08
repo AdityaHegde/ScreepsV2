@@ -48,12 +48,13 @@ export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends C
     const deadEntityWrappers = new Array<EntityWrapperType>();
 
     this.entityWrapperIds.forEach((entityWrapperId, entityWrapperIdx) => {
-      if (this.entityWrappers.length < entityWrapperIdx) {
+      if (this.entityWrappers.length <= entityWrapperIdx) {
         this.entityWrappers.push(Globals.getGlobal(this.EntityWrapperClass, entityWrapperId,
           () => new this.EntityWrapperClass(entityWrapperId)) as EntityWrapperType);
       }
 
       const entityWrapper = this.entityWrappers[entityWrapperIdx];
+      this.logger.setEntityWrapper(entityWrapper);
 
       if (!entityWrapper.entity) {
         entityWrapper.destroy();

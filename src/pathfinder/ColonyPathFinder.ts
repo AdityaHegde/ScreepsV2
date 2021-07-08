@@ -6,6 +6,7 @@ import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
 import {MoveReturnValue, PathNavigator} from "./PathNavigator";
 import {inMemory} from "@memory/inMemory";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {CreepWrapper} from "@wrappers/CreepWrapper";
 
 @MemoryClass("pathFinder")
 export class ColonyPathFinder extends ColonyBaseClass {
@@ -28,16 +29,16 @@ export class ColonyPathFinder extends ColonyBaseClass {
     return this.pathBuilder.addRoad(rawRoad);
   }
 
-  public move(creep: Creep, pos: RoomPosition): MoveReturnValue {
-    return this.pathNavigator.move(creep, pos);
+  public move(creepWrapper: CreepWrapper, pos: RoomPosition): MoveReturnValue {
+    return this.pathNavigator.move(creepWrapper, pos);
   }
 
-  public resolveMove(creep: Creep): MoveReturnValue {
-    return this.pathNavigator.resolveMove(creep);
+  public resolveMove(creepWrapper: CreepWrapper): MoveReturnValue {
+    return this.pathNavigator.resolveMove(creepWrapper);
   }
 
-  public resolveAndMove(creep: Creep, pos: RoomPosition): MoveReturnValue {
-    return this.pathNavigator.resolveAndMove(creep, pos);
+  public resolveAndMove(creepWrapper: CreepWrapper, pos: RoomPosition): MoveReturnValue {
+    return this.pathNavigator.resolveAndMove(creepWrapper, pos);
   }
 
   public acquireRoadPos(pos: RoomPosition): RoadPos {

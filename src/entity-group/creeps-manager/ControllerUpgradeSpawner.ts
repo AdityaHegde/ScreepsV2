@@ -1,14 +1,8 @@
-import {PowerBasedCreepsSpawner} from "./PowerBasedCreepsSpawner";
+import {ControllerUpgradeGroup} from "../group/ControllerUpgradeGroup";
+import {CreepsSpawner} from "./CreepsSpawner";
 
-export class ControllerUpgradeSpawner extends PowerBasedCreepsSpawner {
-  public init(): void {
-    this.lastCapacity = this.room.energyCapacityAvailable;
-    this.currentCost = this.getBodyPartsCost(this.getBodyParts());
-
-    this.maxMainPartsCount = this.getMaxMainParts();
-  }
-
-  protected getMaxMainParts(): number {
-    return 1;
+export class ControllerUpgradeSpawner extends CreepsSpawner {
+  public shouldSpawnCreeps(): boolean {
+    return !!(this.creepGroup as ControllerUpgradeGroup).containerId && super.shouldSpawnCreeps();
   }
 }

@@ -12,7 +12,7 @@ import {Logger} from "@utils/Logger";
 export type ConstructionType = [id: string, x: number, y: number];
 export type BuildingType = [id: string, x: number, y: number];
 
-export const MAX_CONCURRENT_SITES = 100;
+export const MAX_CONCURRENT_SITES = 5;
 
 @MemoryClass("buildings")
 export class ColonyBuildings extends ColonyBaseClass {
@@ -39,10 +39,6 @@ export class ColonyBuildings extends ColonyBaseClass {
   @inMemory(() => 0)
   public prevLevel: number;
 
-  public init(): void {
-    // nothing
-  }
-
   public run(): void {
     if (this.prevLevel < this.room.controller.level) {
       this.prevLevel = this.room.controller.level;
@@ -62,7 +58,7 @@ export class ColonyBuildings extends ColonyBaseClass {
 
     while (buildingPrefab && count <= MAX_CONCURRENT_SITES) {
       const buildingPos = buildingPrefab[1][this.cursor];
-      const result = buildingPos && this.room.createConstructionSite(buildingPos[1][0], buildingPos[1][1], structureType);
+      const result = buildingPos && this.room.createConstructionSite(buildingPos[0], buildingPos[1], structureType);
 
       if (result === OK) {
         EventLoop.getEventLoop().addEvent(ConstructionSiteCreatedEventHandler.getEvent(
@@ -72,6 +68,9 @@ export class ColonyBuildings extends ColonyBaseClass {
         count++;
       } else if (buildingPos) {
         this.logger.log(`Failed to build ${structureType} at (${buildingPos.join(",")}) result=${result}`);
+        if (result === ERR_INVALID_ARGS) {
+          console.log(JSON.stringify(this.room.lookAt(buildingPos[0], buildingPos[1])));
+        }
         break;
       }
 

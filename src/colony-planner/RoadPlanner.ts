@@ -53,10 +53,12 @@ export class RoadPlanner extends Planner {
       }
     });
     const rawRoad = new Array<ArrayPos>();
+    let lastPos: ArrayPos;
 
     pathFinderPath.path.forEach((pos, index) => {
       const arrayPos: ArrayPos = [pos.x, pos.y];
       if (index < pathFinderPath.path.length - 1) rawRoad.push(arrayPos);
+      else lastPos = arrayPos;
       colonyPlanner.addBuildingPos(roadBuildingPlan, arrayPos);
     });
     colonyPlanner.addBuildingPos(containerBuildingPlan, [
@@ -66,6 +68,6 @@ export class RoadPlanner extends Planner {
 
     const roadPos = colonyPlanner.pathFinder.addRoad(rawRoad);
 
-    return [roadPos, rawRoad[rawRoad.length - 1]];
+    return [roadPos, lastPos];
   }
 }

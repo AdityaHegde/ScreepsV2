@@ -1,14 +1,17 @@
 import {ColonyBaseClass} from "../ColonyBaseClass";
-import {JobAssigner} from "../job/JobAssigner";
-import {Logger} from "../utils/Logger";
+import {Logger} from "@utils/Logger";
 import {MemoryClass} from "@memory/MemoryClass";
-import {ROOM_RUNNER_ID} from "../constants";
-import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {DEPOSIT_ID, ROOM_RUNNER_ID} from "../constants";
+import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {ColonyBuildings} from "../building/ColonyBuildings";
-import {ColonyPathFinder} from "../pathfinder/ColonyPathFinder";
+import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
 import {CreepSpawnQueue} from "../entity-group/creeps-manager/CreepSpawnQueue";
 import {GroupRunner} from "./GroupRunner";
 import {ColonyPlanner} from "../colony-planner/ColonyPlanner";
+import {getWrapperById} from "@wrappers/getWrapperById";
+import {EntityWrapper} from "@wrappers/EntityWrapper";
+import {Globals} from "@globals/Globals";
+import {EntityPool} from "../entity-group/entity-pool/EntityPool";
 
 @MemoryClass("runner")
 export class ColonyRunner extends ColonyBaseClass {
@@ -39,8 +42,9 @@ export class ColonyRunner extends ColonyBaseClass {
     this.logger.log("init");
 
     if (!this.room.memory.initialised) {
-      this.colonyPlanner.init();
-      this.room.memory.initialised = true;
+      if (this.colonyPlanner.init()) {
+        this.room.memory.initialised = true;
+      }
     } else {
       if (!this.colonyPlanner.plan()) {
         this.room.memory.planned = true;
@@ -60,9 +64,10 @@ export class ColonyRunner extends ColonyBaseClass {
 
   public tick(): void {
     // this.logger.log(`${this.room.energyAvailable}/${this.room.energyCapacityAvailable}`);
-    // this.colonyBuildings.run();
+    this.colonyBuildings.run();
     this.groupRunner.tick();
     this.creepSpawnQueue.tick();
+    this.updateSpawnWeights();
   }
 
   public postTick(): void {
@@ -76,5 +81,15 @@ export class ColonyRunner extends ColonyBaseClass {
   ): ColonyRunner {
     return new ColonyRunner(getIdFromRoom(room, ROOM_RUNNER_ID), room, groupRunner, colonyBuildings,
       pathFinder, creepSpawnQueue);
+  }
+
+  private updateSpawnWeights() {
+    const depositPool = Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(this.room, DEPOSIT_ID));
+    this.creepSpawnQueue.spawnIds.forEach((spawnId) => {
+      const spawnEntityWrapper = getWrapperById(spawnId) as EntityWrapper<StructureSpawn>;
+      depositPool.updateCurrentWeight(spawnEntityWrapper, -1,
+        spawnEntityWrapper.entity.store.getCapacity(RESOURCE_ENERGY));
+      this.logger.log(`spawnId=${spawnId} energy=${spawnEntityWrapper.entity.store[RESOURCE_ENERGY]}`);
+    });
   }
 }

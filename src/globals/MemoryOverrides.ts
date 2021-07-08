@@ -19,12 +19,6 @@ declare global {
     target?: string;
     weight?: number;
 
-    pos?: RoadPos;
-    dest?: RoadPos;
-    through?: RoadConnectionEntry;
-    lastPos?: ArrayPos;
-    lastRoadPosIdx?: number;
-
     task?: number;
     subTask?: number;
   }

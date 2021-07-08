@@ -3,6 +3,7 @@ import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 import {BaseEntityType, EntityWrapper} from "@wrappers/EntityWrapper";
 import {getWrapperById} from "@wrappers/getWrapperById";
+import {findInArray} from "@utils/StatsUtils";
 
 @MemoryClass("entityPool")
 export class EntityPool extends ColonyBaseClass {
@@ -10,30 +11,46 @@ export class EntityPool extends ColonyBaseClass {
   public entityWrapperIds: Array<string>;
   @inMemory(() => {return {}})
   public weights: Record<string, number>;
-  @inMemory(() => {return {}})
-  public currentWeights: Record<string, number>;
 
-  public freeEntityWrappers: Array<EntityWrapper<any>>;
+  public freeEntityWrappers: Array<EntityWrapper<BaseEntityType>>;
+  public preTickRun = false;
 
   public preTick(): void {
-    this.freeEntityWrappers = new Array<EntityWrapper<any>>();
+    if (this.preTickRun) return;
+    this.freeEntityWrappers = new Array<EntityWrapper<BaseEntityType>>();
+    this.preTickRun = true;
+
     this.entityWrapperIds.forEach((entityWrapperId) => {
       const entityWrapper = getWrapperById(entityWrapperId);
-      if (this.currentWeights[entityWrapper.id] > 0) {
+      // this.logger.log(`id=${entityWrapper.id} ${this.weights[entityWrapper.id]}`);
+      if (!entityWrapper.entity) {
+        this.removeEntityWrapper(entityWrapper);
+      } else if (this.weights[entityWrapper.id] > 0) {
         this.freeEntityWrappers.push(entityWrapper);
       }
     });
   }
 
-  public addEntityWrapper(entityWrapper: EntityWrapper<any>): void {
+  public addEntityWrapper(entityWrapper: EntityWrapper<BaseEntityType>, initialWeight: number): void {
+    if (this.entityWrapperIds.indexOf(entityWrapper.id) >= 0) return;
     this.entityWrapperIds.push(entityWrapper.id);
-    this.currentWeights[entityWrapper.id] = entityWrapper.weight;
-    if (this.currentWeights[entityWrapper.id] > 0) {
+    this.weights[entityWrapper.id] = initialWeight;
+    if (this.weights[entityWrapper.id] > 0) {
+      this.freeEntityWrappers?.push(entityWrapper);
+    }
+  }
+
+  public updateCurrentWeight(entityWrapper: EntityWrapper<BaseEntityType>, curWeightOffset: number, maxWeight: number): void {
+    const wasNotFree = this.weights[entityWrapper.id] === 0;
+    this.weights[entityWrapper.id] = Math.min(
+      Math.max(0, this.weights[entityWrapper.id] + curWeightOffset), maxWeight,
+    );
+    if (wasNotFree) {
       this.freeEntityWrappers.push(entityWrapper);
     }
   }
 
-  public removeEntityWrapper(entityWrapper: EntityWrapper<any>): void {
+  public removeEntityWrapper(entityWrapper: EntityWrapper<BaseEntityType>): void {
     const idx = this.entityWrapperIds.indexOf(entityWrapper.id);
     if (idx === -1) return;
     this.entityWrapperIds.splice(idx, 1);
@@ -47,19 +64,22 @@ export class EntityPool extends ColonyBaseClass {
     return this.freeEntityWrappers.length > 0;
   }
 
-  public claimTarget(entityWrapper: EntityWrapper<any>): EntityWrapper<BaseEntityType> {
+  public claimTarget(entityWrapper: EntityWrapper<BaseEntityType>, entityWeight: number): EntityWrapper<BaseEntityType> {
     const claimedEntityWrapper = this.freeEntityWrappers[0];
-    if (this.currentWeights[claimedEntityWrapper.id] > entityWrapper.weight) {
-      entityWrapper.currentWeight = this.currentWeights[claimedEntityWrapper.id] - entityWrapper.weight;
+    let claimedWeight: number;
+    if (this.weights[claimedEntityWrapper.id] > entityWeight) {
+      claimedWeight = entityWeight;
     } else {
-      entityWrapper.currentWeight = this.currentWeights[claimedEntityWrapper.id];
+      claimedWeight = entityWeight - this.weights[claimedEntityWrapper.id];
     }
-    this.currentWeights[claimedEntityWrapper.id] -= entityWrapper.currentWeight;
+    this.weights[claimedEntityWrapper.id] -= claimedWeight;
 
-    if (this.currentWeights[claimedEntityWrapper.id] <= 0) {
+    if (this.weights[claimedEntityWrapper.id] <= 0) {
       this.freeEntityWrappers.splice(0, 1);
     }
 
-    return claimedEntityWrapper as EntityWrapper<BaseEntityType>;
+    // this.logger.log(`claimedWeight=${claimedWeight} newWeight=${this.weights[claimedEntityWrapper.id]}`);
+
+    return claimedEntityWrapper;
   }
 }

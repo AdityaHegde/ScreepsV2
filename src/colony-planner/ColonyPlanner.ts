@@ -7,11 +7,15 @@ import {
   WALKABLE_BUILDING_TYPES
 } from "../preprocessing/ParserMetadata";
 import {getIdFromRoom} from "@utils/getIdFromRoom";
-import {COLONY_PLAN_ID, ROOM_MAX_X, ROOM_MAX_Y} from "../constants";
+import {COLONY_PLAN_ID, DEPOSIT_ID, ROOM_MAX_X, ROOM_MAX_Y} from "../constants";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
 import {BunkerPlanner} from "./BunkerPlanner";
 import {RoadPlanner} from "./RoadPlanner";
 import {Logger} from "@utils/Logger";
+import {Globals} from "@globals/Globals";
+import {EntityPool} from "../entity-group/entity-pool/EntityPool";
+import {getWrapperById} from "@wrappers/getWrapperById";
+import {EntityWrapper} from "@wrappers/EntityWrapper";
 
 @MemoryClass("plan")
 export class ColonyPlanner extends ColonyBaseClass {
@@ -38,15 +42,17 @@ export class ColonyPlanner extends ColonyBaseClass {
     this.pathFinder = pathFinder;
   }
 
-  public init(): void {
+  public init(): boolean {
     // TODO: do automatic placement
-    const spawn = this.room.find(FIND_STRUCTURES, {
-      filter: { structureType: STRUCTURE_SPAWN },
-    })[0];
+    const spawn = this.room.find(FIND_MY_SPAWNS)[0];
 
     if (!spawn) {
-      return;
+      return false;
     }
+    const spawnEntityWrapper = getWrapperById(spawn.id) as EntityWrapper<StructureSpawn>;
+    // adding a weight buffer to account for regen. TODO: do this in a better way
+    Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(this.room, DEPOSIT_ID))
+      .addEntityWrapper(spawnEntityWrapper, 0);
 
     this.center = [spawn.pos.x, spawn.pos.y];
     this.costMatrix = new PathFinder.CostMatrix();
@@ -64,6 +70,8 @@ export class ColonyPlanner extends ColonyBaseClass {
     BunkerPlanner.getBunkerPlan().plan(this);
 
     this.rawCostMatrix = this.costMatrix.serialize();
+
+    return true;
   }
 
   public plan(): boolean {

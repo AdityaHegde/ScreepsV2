@@ -34,8 +34,6 @@ export class Job extends ColonyBaseClass {
 
   public tick(): void {
     this.creepPool.tick((creep: Creep) => {
-      this.logger.setCreep(creep);
-
       const task = this.tasks[creep.memory.task]?.[creep.memory.subTask];
       if (!task) {
         return;

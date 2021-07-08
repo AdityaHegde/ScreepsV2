@@ -1,8 +1,11 @@
+import {CreepWrapper} from "@wrappers/CreepWrapper";
+import {EntityWrapper} from "@wrappers/EntityWrapper";
+
 export class Logger {
   private readonly label: string;
 
   private room: Room;
-  private creep: Creep;
+  private entityWrapper: EntityWrapper<any>;
 
   public constructor(label: string) {
     this.label = label;
@@ -13,8 +16,8 @@ export class Logger {
     return this;
   }
 
-  public setCreep(creep: Creep): Logger {
-    this.creep = creep;
+  public setEntityWrapper(entityWrapper: EntityWrapper<any>): Logger {
+    this.entityWrapper = entityWrapper;
     return this;
   }
 
@@ -29,10 +32,10 @@ export class Logger {
       args.push(`[${this.room.name}]`);
     }
 
-    if (this.creep) {
-      args.push(`creep=${this.creep.name}`);
-      if ("task" in this.creep.memory) args.push(`task=${this.creep.memory.task}`);
-      if ("subTask" in this.creep.memory) args.push(`subTask=${this.creep.memory.subTask}`);
+    if (this.entityWrapper) {
+      args.push(`entity=${this.entityWrapper.entity.name ?? this.entityWrapper.id}`);
+      if ("task" in this.entityWrapper.memory) args.push(`task=${this.entityWrapper.task}`);
+      if ("subTask" in this.entityWrapper.memory) args.push(`subTask=${this.entityWrapper.subTask}`);
     }
 
     return args;

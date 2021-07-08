@@ -58,6 +58,12 @@ export function isAdjacentToPos(sourcePos: ArrayPos, destPos: ArrayPos): (Direct
   return getDirectionBetweenPos(sourcePos, destPos);
 }
 
+export function isNearToRoomPosition(sourcePos: RoomPosition, destPos: RoomPosition, range = 1): boolean {
+  const dx = Math.abs(destPos.x - sourcePos.x);
+  const dy = Math.abs(destPos.y - sourcePos.y);
+  return Math.max(dx, dy) <= range;
+}
+
 export function rotateDirection(direction: DirectionConstant, times: number): DirectionConstant {
   return (((direction + times - 1) % 8) + 1) as DirectionConstant;
 }

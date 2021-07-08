@@ -1,6 +1,6 @@
 import {CreepCreatedEventEntry, CreepCreatedEventEntryType, CreepCreatedEventHandler} from "./CreepCreatedEventHandler";
 import {MemoryClass} from "@memory/MemoryClass";
-import {Globals} from "../globals/Globals";
+import {Globals} from "@globals/Globals";
 import {EVENT_LOOP_ID} from "../constants";
 import {BaseClass} from "../BaseClass";
 import {
@@ -9,8 +9,18 @@ import {
   ConstructionSiteCreatedEventType
 } from "./ConstructionSiteCreatedEventHandler";
 import {StructureBuiltEvent, StructureBuiltEventHandler, StructureBuiltEventType} from "./StructureBuiltEventHandler";
+import {
+  ResourceDroppedEvent,
+  ResourceDroppedEventHandler,
+  ResourceDroppedEventType
+} from "./ResourceDroppedEventHandler";
 
-export type EventEntry = CreepCreatedEventEntry | ConstructionSiteCreatedEvent | StructureBuiltEvent;
+export type EventEntry = (
+  CreepCreatedEventEntry |
+  ConstructionSiteCreatedEvent |
+  StructureBuiltEvent |
+  ResourceDroppedEvent
+);
 
 @MemoryClass("eventLoop")
 export class EventLoop extends BaseClass {
@@ -18,6 +28,7 @@ export class EventLoop extends BaseClass {
     [CreepCreatedEventEntryType]: new CreepCreatedEventHandler(),
     [ConstructionSiteCreatedEventType]: new ConstructionSiteCreatedEventHandler(),
     [StructureBuiltEventType]: new StructureBuiltEventHandler(),
+    [ResourceDroppedEventType]: new ResourceDroppedEventHandler(),
   };
 
   protected events: Array<EventEntry>;

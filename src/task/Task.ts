@@ -44,7 +44,6 @@ export class Task<TargetType extends BaseTargetType, TargetClass extends Target<
   }
 
   public tick(creep: Creep): (OK | ERR_INVALID_TARGET | typeof TASK_DONE) {
-    this.logger.setCreep(creep);
     this.creepCount++;
     const target = this.acquireTarget(creep);
     if (!target) {
@@ -102,8 +101,8 @@ export class Task<TargetType extends BaseTargetType, TargetClass extends Target<
     //   serializeMemory: true,
     //   range,
     // });
-    this.pathFinder.resolveMove(creep);
-    this.pathFinder.move(creep, target.pos);
+    this.pathFinder.resolveMove(null);
+    this.pathFinder.move(null, target.pos);
     return false;
   }
 

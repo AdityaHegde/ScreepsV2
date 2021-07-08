@@ -5,6 +5,8 @@ export class PowerBasedCreepsSpawner extends CreepsSpawner {
   public currentPower: number;
 
   public shouldSpawnCreeps(): boolean {
+    if (!super.shouldSpawnCreeps()) return false;
+
     this.currentPower = this.creepGroup.entityWrappers.reduce(
       (totalPower, creepWrapper) => totalPower + creepWrapper.power, 0);
     const currentBodyPartCount = this.getBodyParts(Math.min(this.mainPartsCount, this.maxMainPartsCount - this.currentPower)).length;

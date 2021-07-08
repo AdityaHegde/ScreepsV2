@@ -72,12 +72,13 @@ export class CreepsSpawner extends ColonyBaseClass {
 
     if (newCost <= this.room.energyCapacityAvailable) {
       this.mainPartsCount++;
+      this.currentCost = newCost;
     }
     this.lastCapacity = this.room.energyCapacityAvailable;
   }
 
   public shouldSpawnCreeps(): boolean {
-    return this.creepGroup.entityWrapperIds.length < this.maxCreeps;
+    return this.creepGroup.entityWrapperIds.length + this.queuedCreepNumber < this.maxCreeps;
   }
 
   // TODO: cache this
@@ -94,6 +95,10 @@ export class CreepsSpawner extends ColonyBaseClass {
   public getSpawnQueueEntry(): CreepSpawnQueueEntry {
     this.queuedCreepNumber++;
     return [this.id, this.getBodyPartsCost(this.getBodyParts()), this.mainPartsCount];
+  }
+
+  public spawnedCreep(): void {
+    this.queuedCreepNumber--;
   }
 
   protected getBodyPartsCost(bodyParts: Array<BodyPartConstant>): number {

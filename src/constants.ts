@@ -9,9 +9,12 @@ export const COLONY_BUILDINGS_ID = "buildings";
 export const DEPOSIT_ID = "deposit";
 export const SOURCE_ID = "source";
 export const CONTROLLER_ID = "controller";
+export const BUILD_ID = "build";
+export const REPAIR_ID = "repair";
 export const CONSTRUCT_ENTITY_POOL_ID = "construct";
 
 export const HAUL_GROUP_ID = "haul";
+export const BUILD_GROUP_ID = "build";
 
 // Logger constants
 export const MOVE_MODE = "move";
