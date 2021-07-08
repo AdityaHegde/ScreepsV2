@@ -1,9 +1,8 @@
 import {EventEntryBase, EventHandler} from "./EventEntryBase";
-import {Globals} from "../globals/Globals";
+import {Globals} from "@globals/Globals";
 import {ColonyBuildings} from "../building/ColonyBuildings";
-import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {COLONY_BUILDINGS_ID, DEPOSIT_ID} from "../constants";
-import {TargetPool} from "../task/target-pool/TargetPool";
 
 export const StructureBuiltEventType = "StructureBuilt";
 
@@ -33,10 +32,10 @@ export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent
       colonyBuildings.siteCount--;
     }
 
-    if (eventEntry.buildingType in StructureToTargetMap) {
-      Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, StructureToTargetMap[eventEntry.buildingType]))
-        ?.addTarget(sites[0]);
-    }
+    // if (eventEntry.buildingType in StructureToTargetMap) {
+    //   Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, StructureToTargetMap[eventEntry.buildingType]))
+    //     ?.addTarget(sites[0]);
+    // }
 
     return false;
   }

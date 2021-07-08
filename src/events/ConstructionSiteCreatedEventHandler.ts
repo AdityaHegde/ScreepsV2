@@ -1,7 +1,6 @@
 import {EventEntryBase, EventHandler} from "./EventEntryBase";
-import {Globals} from "../globals/Globals";
-import {TargetPool} from "../task/target-pool/TargetPool";
-import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {Globals} from "@globals/Globals";
+import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {CONSTRUCT_ENTITY_POOL_ID} from "../constants";
 
 export const ConstructionSiteCreatedEventType = "ConstructionSiteCreated";
@@ -20,8 +19,8 @@ export class ConstructionSiteCreatedEventHandler extends EventHandler<any> {
       .filter(site => site.structureType === eventEntry.buildingType);
     if (sites.length === 0) return true;
 
-    Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, CONSTRUCT_ENTITY_POOL_ID))
-      ?.addTarget(sites[0]);
+    // Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, CONSTRUCT_ENTITY_POOL_ID))
+    //   ?.addTarget(sites[0]);
 
     return false;
   }
