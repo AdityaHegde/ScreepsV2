@@ -3,6 +3,9 @@ import {CreepWrapper} from "@wrappers/CreepWrapper";
 import {Globals} from "@globals/Globals";
 import {HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
 import {ControllerWrapper} from "@wrappers/ControllerWrapper";
+import {ResourceWrapper} from "@wrappers/ResourceWrapper";
+
+const ResourceWrapperRegex = /\d*-\d*/;
 
 export function getWrapperById(id: string): EntityWrapper<BaseEntityType> {
   const fromCache = Globals.getGlobal<EntityWrapper<BaseEntityType>>(EntityWrapper, id);
@@ -17,6 +20,8 @@ export function getWrapperById(id: string): EntityWrapper<BaseEntityType> {
     EntityWrapperClass = HarvestableEntityWrapper as typeof EntityWrapper;
   } else if (entity instanceof StructureController) {
     EntityWrapperClass = ControllerWrapper as typeof EntityWrapper;
+  } else if (ResourceWrapperRegex.exec(id)) {
+    EntityWrapperClass = ResourceWrapper as typeof EntityWrapper;
   }
 
   return EntityWrapperClass.getEntityWrapper(id);

@@ -17,9 +17,9 @@ export function simpleRoomRunnerFactory(room: Room): ColonyRunner {
     room,
     Globals.addGlobal(new GroupRunner(getIdFromRoom(room, "group"), room, [
       harvestGroups[0],
-      getHaulGroup(room, pathFinder, getHaulNetworks(room, pathFinder)),
-      getBuildGroup(room, pathFinder, getBuildNetworks(room, pathFinder)),
+      getHaulGroup(room, pathFinder, getHaulNetworks(room)),
       ...harvestGroups.slice(1),
+      getBuildGroup(room, pathFinder, getBuildNetworks(room)),
       getControllerUpgradeGroup(room, pathFinder),
     ], creepSpawnQueue)),
     Globals.addGlobal(ColonyBuildings.getColonyBuildings(room, Globals.addGlobal(ColonyPlanner.getColonyPlan(room, pathFinder)))),

@@ -38,7 +38,8 @@ import {execSync} from "child_process";
       break;
     }
   }
-  console.log("[memory]", await bot.memory);
+  const memory: Record<string, any> = JSON.parse(await bot.memory);
+  ["entity", "entityPool", "groups"].forEach(key => console.log(key, JSON.stringify(memory[key])));
   server.stop();
   process.exit(0);
 })();

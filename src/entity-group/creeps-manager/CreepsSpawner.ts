@@ -11,7 +11,6 @@ export interface CreepsManagerOpts {
   matchCarry: boolean;
   mainPart: BodyPartConstant;
   initParts: Array<BodyPartConstant>;
-  initMainPartsCount: number;
   maxMainPartsCount: number;
   maxCreeps: number;
 }
@@ -44,7 +43,7 @@ export class CreepsSpawner extends ColonyBaseClass {
     id: string, room: Room,
     {
       mainPart, matchMove, matchCarry,
-      initParts, initMainPartsCount, maxMainPartsCount, maxCreeps,
+      initParts, maxMainPartsCount, maxCreeps,
     }: CreepsManagerOpts,
   ) {
     super(id, room);
@@ -53,7 +52,8 @@ export class CreepsSpawner extends ColonyBaseClass {
     this.matchCarry = matchCarry;
     this.mainPart = mainPart;
     this.initParts = initParts;
-    this.initMainPartsCount = initMainPartsCount;
+    this.initMainPartsCount = initParts.reduce((count, part) =>
+      (part === this.mainPart ? 1 : 0) + count, 0);
     if (maxMainPartsCount) this.maxMainPartsCount = maxMainPartsCount;
     this.maxCreeps = maxCreeps;
   }

@@ -1,7 +1,7 @@
 import "@globals/MemoryOverrides";
 import {GameRunner} from "./runner/GameRunner";
-import {Globals} from "@globals/Globals";
 import {simpleRoomRunnerFactory} from "./factory/simpleRoomRunnerFactory";
+import {Globals} from "@globals/Globals";
 
 export const loop = (): void => {
   Globals.init();

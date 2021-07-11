@@ -21,6 +21,9 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
   public containerId: string;
   public container: EntityWrapper<StructureContainer>;
 
+  @inMemory()
+  public hasHaul: boolean;
+
   public setContainer(container: StructureContainer): void {
     this.containerId = container.id;
   }
@@ -44,12 +47,13 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
     this.forEachEntityWrapper((creepWrapper) => {
       if (creepWrapper.task === 0) {
         creepWrapper.dest = this.target.roadPos;
-        if (this.pathFinder.resolveAndMove(creepWrapper, null) === MOVE_COMPLETED) {
+        if (creepWrapper.hasReachedDest() && creepWrapper.entity.fatigue === 0) {
           creepWrapper.task = 1;
           creepWrapper.clearMovement();
           reachedCreepWrapper = creepWrapper;
           this.logger.log(`reached ${creepWrapper.entity.pos.x},${creepWrapper.entity.pos.y}`);
         } else {
+          this.pathFinder.pathNavigator.move(creepWrapper, null);
           return;
         }
       }
@@ -57,7 +61,7 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
       this.takeAction(creepWrapper);
     });
 
-    rearrangePositions(this.target, reachedCreepWrapper);
+    rearrangePositions(this.target, reachedCreepWrapper, this.pathFinder.pathNavigator);
 
     this.depositResource();
   }

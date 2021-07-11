@@ -1,6 +1,8 @@
 import {BaseEntityType, EntityWrapper} from "@wrappers/EntityWrapper";
 import {CreepWrapper} from "@wrappers/CreepWrapper";
-import {JobGroupActions} from "./JobGroupActions";
+import {JobGroupActions} from "./job/JobGroupActions";
+import {EventLoop} from "../../events/EventLoop";
+import {StructureBuiltEventHandler} from "../../events/StructureBuiltEventHandler";
 
 export class BuildGroupActions extends JobGroupActions {
   public targetAction(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): number {
@@ -9,6 +11,19 @@ export class BuildGroupActions extends JobGroupActions {
     } else if (targetWrapper.entity instanceof Structure) {
       return creepWrapper.entity.repair(targetWrapper.entity);
     }
-    return -1;
+    return -12;
+  }
+
+  public targetActionCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): boolean {
+    return creepWrapper.entity.store[RESOURCE_ENERGY] <= BUILD_POWER * creepWrapper.power ||
+      !targetWrapper.entity;
+  }
+
+  public actionHasCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): void {
+    if (targetWrapper.entity instanceof ConstructionSite &&
+        targetWrapper.entity.progressTotal - targetWrapper.entity.progress > creepWrapper.power * BUILD_POWER) {
+      EventLoop.getEventLoop().addEvent(StructureBuiltEventHandler.getEvent(
+        this.room.name, targetWrapper.entity.structureType, targetWrapper.entity.pos.x, targetWrapper.entity.pos.y));
+    }
   }
 }

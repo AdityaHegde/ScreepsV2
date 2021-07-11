@@ -2,11 +2,8 @@ import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {PathFinderData} from "./PathFinderData";
 import {PathBuilder} from "./PathBuilder";
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
-import {MoveReturnValue, PathNavigator} from "./PathNavigator";
-import {inMemory} from "@memory/inMemory";
+import {PathNavigator} from "./PathNavigator";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
-import {CreepWrapper} from "@wrappers/CreepWrapper";
 
 @MemoryClass("pathFinder")
 export class ColonyPathFinder extends ColonyBaseClass {
@@ -25,24 +22,12 @@ export class ColonyPathFinder extends ColonyBaseClass {
     this.pathNavigator = pathNavigator;
   }
 
-  public addRoad(rawRoad: Array<ArrayPos>): RoadPos {
-    return this.pathBuilder.addRoad(rawRoad);
+  public preTick(): void {
+    this.pathNavigator.preTick();
   }
 
-  public move(creepWrapper: CreepWrapper, pos: RoomPosition): MoveReturnValue {
-    return this.pathNavigator.move(creepWrapper, pos);
-  }
-
-  public resolveMove(creepWrapper: CreepWrapper): MoveReturnValue {
-    return this.pathNavigator.resolveMove(creepWrapper);
-  }
-
-  public resolveAndMove(creepWrapper: CreepWrapper, pos: RoomPosition): MoveReturnValue {
-    return this.pathNavigator.resolveAndMove(creepWrapper, pos);
-  }
-
-  public acquireRoadPos(pos: RoomPosition): RoadPos {
-    return this.pathNavigator.acquireRoadPos(pos);
+  public postTick(): void {
+    this.pathNavigator.postTick();
   }
 
   public static getColonyPathFinder(room: Room): ColonyPathFinder {

@@ -79,8 +79,8 @@ export class ColonyPlanner extends ColonyBaseClass {
     this.logger.log(`Planning stage=${this.stage}`);
     this.costMatrix = PathFinder.CostMatrix.deserialize(this.rawCostMatrix);
     switch (this.stage) {
-      case 1: RoadPlanner.getControllerPlan(this).plan(this); break;
-      case 2: RoadPlanner.getSourceRoadPlans(this).forEach(roadPlanner => roadPlanner.plan(this)); break;
+      case 1: RoadPlanner.getSourceRoadPlans(this).forEach(roadPlanner => roadPlanner.plan(this)); break;
+      case 2: RoadPlanner.getControllerPlan(this).plan(this); break;
     }
     this.stage--;
     if (this.stage === 0) {

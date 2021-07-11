@@ -12,14 +12,4 @@ declare global {
     initialised: boolean;
     planned: boolean;
   }
-
-  interface CreepMemory {
-    power?: number;
-
-    target?: string;
-    weight?: number;
-
-    task?: number;
-    subTask?: number;
-  }
 }

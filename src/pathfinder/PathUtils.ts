@@ -30,7 +30,10 @@ export const ROTATE_CLOCKWISE = 1;
 export const ROTATE_ANTI_CLOCKWISE = 7;
 
 export function getKeyFromArrayPos(arrayPos: ArrayPos): string {
-  return `${arrayPos[0]}__${arrayPos[1]}`;
+  return getKeyFromArrayXY(arrayPos[0], arrayPos[1]);
+}
+export function getKeyFromRoomPosition(roomPosition: RoomPosition): string {
+  return getKeyFromArrayXY(roomPosition.x, roomPosition.y);
 }
 export function getKeyFromArrayXY(x: number, y: number): string {
   return `${x}__${y}`;
@@ -61,6 +64,11 @@ export function isAdjacentToPos(sourcePos: ArrayPos, destPos: ArrayPos): (Direct
 export function isNearToRoomPosition(sourcePos: RoomPosition, destPos: RoomPosition, range = 1): boolean {
   const dx = Math.abs(destPos.x - sourcePos.x);
   const dy = Math.abs(destPos.y - sourcePos.y);
+  return Math.max(dx, dy) <= range;
+}
+export function isNearToArrayPos(sourcePos: ArrayPos, arrayPos: ArrayPos, range = 1): boolean {
+  const dx = Math.abs(arrayPos[0] - sourcePos[0]);
+  const dy = Math.abs(arrayPos[1] - sourcePos[1]);
   return Math.max(dx, dy) <= range;
 }
 

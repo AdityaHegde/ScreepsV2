@@ -69,7 +69,7 @@ export class CreepSpawnQueue extends ColonyBaseClass {
     this.logger.log(`Spawning groupId=${queueEntry[0]} creep=${creepName} bodyParts=${JSON.stringify(bodyParts)}`);
     const spawnReturnValue = selectedSpawn.spawnCreep(bodyParts, creepName, {
       // TODO: get this based on prefab
-      directions: [LEFT, BOTTOM_LEFT, BOTTOM],
+      directions: [LEFT, BOTTOM],
     });
     if (spawnReturnValue !== OK) return;
 

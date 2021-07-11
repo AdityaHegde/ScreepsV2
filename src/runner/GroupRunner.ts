@@ -20,6 +20,8 @@ export class GroupRunner extends ColonyBaseClass {
 
   public init(): void {
     this.groups.forEach(group => group.init());
+    [0, 1, 2, 1, 0, 1, 2, 1, 3, 3].forEach(groupIdx =>
+      this.creepSpawnQueue.addToQueue((this.groups[groupIdx] as CreepGroup).creepSpawner.getSpawnQueueEntry()));
   }
 
   public preTick(): void {

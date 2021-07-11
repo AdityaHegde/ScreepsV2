@@ -2,6 +2,7 @@ import {BaseClass} from "../BaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 import {Globals} from "@globals/Globals";
+import {ArrayPos} from "../preprocessing/Prefab";
 
 export interface BaseEntityType {
   id: string;
@@ -28,9 +29,18 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
   @inMemory()
   public subTask: number;
 
+  public arrayPos: ArrayPos;
+
   public constructor(id: string) {
     super(id);
     this.entity = this.getEntityById(id);
+    if (this.entity) {
+      this.arrayPos = [this.entity.pos.x, this.entity.pos.y];
+    }
+  }
+
+  public isValid(): boolean {
+    return !!this.entity;
   }
 
   public updateEntity(entity: EntityType): this {

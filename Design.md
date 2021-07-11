@@ -23,3 +23,10 @@
  - Role - Repair
    - Task - PickupFrom(Harvester/Container), Repair
    - JobRec - Static
+   
+
+
+1. Job types - [cost, type, ...args]
+2. Single check pathing with caching
+3. SetTimeout - [id, method, entityId, ...args]
+4. getEntityById - Class in prototype (this.constructor type?)

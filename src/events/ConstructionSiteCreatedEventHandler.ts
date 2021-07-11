@@ -1,7 +1,9 @@
 import {EventEntryBase, EventHandler} from "./EventEntryBase";
 import {Globals} from "@globals/Globals";
 import {getIdFromRoom} from "@utils/getIdFromRoom";
-import {CONSTRUCT_ENTITY_POOL_ID} from "../constants";
+import {BUILD_ID} from "../constants";
+import {EntityPool} from "../entity-group/entity-pool/EntityPool";
+import {getWrapperById} from "@wrappers/getWrapperById";
 
 export const ConstructionSiteCreatedEventType = "ConstructionSiteCreated";
 
@@ -19,8 +21,10 @@ export class ConstructionSiteCreatedEventHandler extends EventHandler<any> {
       .filter(site => site.structureType === eventEntry.buildingType);
     if (sites.length === 0) return true;
 
-    // Globals.getGlobal<TargetPool<any, any>>(TargetPool as any, getIdFromRoom(room, CONSTRUCT_ENTITY_POOL_ID))
-    //   ?.addTarget(sites[0]);
+    const buildEntityPool = Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(room, BUILD_ID));
+    if (!buildEntityPool) return true;
+
+    sites.forEach(site => buildEntityPool.addEntityWrapper(getWrapperById(site.id), site.progressTotal));
 
     return false;
   }

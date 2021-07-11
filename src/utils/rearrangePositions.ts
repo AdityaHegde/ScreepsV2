@@ -1,6 +1,7 @@
 import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
 import {CreepWrapper} from "../wrappers/CreepWrapper";
 import {getDirectionBetweenPos} from "../pathfinder/PathUtils";
+import {PathNavigator} from "@pathfinder/PathNavigator";
 
 export interface PositionsEntity {
   roadPos: RoadPos;
@@ -11,14 +12,16 @@ export interface PositionsEntity {
 
 export type ShiftDirection = (1 | -1);
 
-export function rearrangePositions(positionsEntity: PositionsEntity, newCreepWrapper: CreepWrapper): void {
+export function rearrangePositions(
+  positionsEntity: PositionsEntity, newCreepWrapper: CreepWrapper, pathNavigator?: PathNavigator,
+): void {
   if (newCreepWrapper) {
     if (makeSpaceForNewCreep(positionsEntity, 1)) {
-      moveToPosition(positionsEntity, newCreepWrapper, positionsEntity.middleIdx, -1);
+      moveToPosition(positionsEntity, newCreepWrapper, positionsEntity.middleIdx, -1, pathNavigator);
       shiftPositions(positionsEntity, -1, positionsEntity.middleIdx - 1);
     } else {
       makeSpaceForNewCreep(positionsEntity, -1);
-      moveToPosition(positionsEntity, newCreepWrapper, positionsEntity.middleIdx, -1);
+      moveToPosition(positionsEntity, newCreepWrapper, positionsEntity.middleIdx, -1, pathNavigator);
     }
   } else {
     shiftPositions(positionsEntity, 1);
@@ -80,7 +83,7 @@ function shiftPositions(
 
 function moveToPosition(
   positionsEntity: PositionsEntity, creepWrapper: CreepWrapper,
-  positionIdx: number, fromPositionIdx: number,
+  positionIdx: number, fromPositionIdx: number, pathNavigator?: PathNavigator,
 ): void {
   const direction = getDirectionBetweenPos(
     [creepWrapper.entity.pos.x, creepWrapper.entity.pos.y],
@@ -92,6 +95,8 @@ function moveToPosition(
   if (fromPositionIdx >= 0 && positionsEntity.positionAssignments[fromPositionIdx] === creepWrapper.id) {
     positionsEntity.positionAssignments[fromPositionIdx] = "";
   }
+
+  if (pathNavigator) pathNavigator.moveOutOfNetwork(creepWrapper);
 }
 
 export function getIdxChecker(positionsEntity: PositionsEntity, checkDirection: ShiftDirection): (idx: number) => boolean {

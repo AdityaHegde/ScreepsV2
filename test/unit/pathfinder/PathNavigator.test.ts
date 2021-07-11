@@ -18,29 +18,40 @@ export class PathNavigatorTest extends GameMocksTestBase {
   ]> {
     return {
       subData: [{
-        args: [
-          ["01014x83x54x7", "01092x44x42x4", "040624x42", "0407124x4221"],
-          [ [1, 1], [2, 2], [3, 7] ],
-          [ [5, 5], [2, 8], [11, 6] ],
-          [ 4, 6, 9 ],
-        ],
-      }, {
-        args: [
-          ["05078822446", "070966882244", "09074466882", "070522446688"],
-          [ [4, 6], [6, 4], [10, 6], [6, 8] ],
-          [ [6, 6], [8, 4], [8, 8], [6, 10] ],
-          [ 2, 2, 2, 2 ],
-        ],
-      }, {
+      //   title: "Sanity check",
+      //   args: [
+      //     ["01014x83x54x7", "01092x44x42x4", "040624x42", "0407124x4221"],
+      //     [ [1, 1], [2, 2], [3, 7] ],
+      //     [ [5, 5], [2, 8], [11, 6] ],
+      //     [ 4, 6, 9 ],
+      //   ],
+      // }, {
+      //   title: "Conflict test",
+      //   args: [
+      //     ["01014x83x54x7", "01092x44x42x4", "040624x42", "0407124x4221"],
+      //     [ [2, 2], [4, 4], [19, 14], [16, 11], [11, 7], [13, 9] ],
+      //     [ [4, 4], [2, 2], [16, 11], [19, 14], [9, 9], [9, 9] ],
+      //     [ 2, 3, 3, 3, 2, 4 ],
+      //   ],
+      // }, {
+      //   title: "Move around circle",
+      //   args: [
+      //     ["05078822446", "070966882244", "09074466882", "070522446688"],
+      //     [ [4, 6], [6, 4], [10, 6], [6, 8], [9, 7] ],
+      //     [ [6, 6], [8, 4], [8, 8], [6, 10], [11, 5] ],
+      //     [ 2, 2, 2, 2, 2 ],
+      //   ],
+      // }, {
+        title: "Move past circle",
         args: [
           [
             "05078822446", "070966882244", "09074466882", "070522446688",
             "06088x5", "08086x5", "08064x5", "06062x5",
           ],
-          [ [7, 9], [12, 10], [10, 2] ],
-          [ [1, 3], [2, 4], [12, 10] ],
-          [ 6, 10, 8 ],
-        ]
+          [ [7, 9], [12, 10], [10, 2], [5, 7] ],
+          [ [1, 3], [2, 4], [12, 10], [3, 13] ],
+          [ 6, 10, 8, 6 ],
+        ],
       }],
     };
   }
@@ -55,7 +66,7 @@ export class PathNavigatorTest extends GameMocksTestBase {
 
     const creeps = creepsPos.map((creepPos, idx) => {
       const creep = creepMovementMocks.createCreep(`C${idx}`, new RoomPosition(creepPos[0], creepPos[1], "r"));
-      const creepWrapper = new CreepWrapper(creep.id);
+      const creepWrapper = CreepWrapper.getEntityWrapper<CreepWrapper>(creep.id);
       creepWrapper.entity = creep;
       return creepWrapper;
     });
@@ -68,16 +79,19 @@ export class PathNavigatorTest extends GameMocksTestBase {
 
     for (let i = 0; i < MAX_TICKS && reachedCreeps.size < creeps.length; i++) {
       console.log("Tick:", i);
+      pathNavigator.preTick();
       creeps.forEach((creep, idx) => {
         if (reachedCreeps.has(creep.id)) return;
-        if (pathNavigator.resolveMove(creep) === MOVE_COMPLETED) {
+        if (i > 0 && creep.hasReachedDest()) {
           reachedCreeps.add(creep.id);
+          creep.clearMovement();
           return;
         }
         actualRunForTicks[idx]++;
         pathNavigator.move(creep, targetRoomPositions[idx]);
       });
 
+      pathNavigator.postTick();
       // if (reachedCreeps.size < creeps.length) {
       //   visualize(MAX_X, MAX_Y, pathFinderData.roadPosMap, creepMovementMocks.grid);
       // }

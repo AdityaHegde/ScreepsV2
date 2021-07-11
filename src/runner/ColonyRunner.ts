@@ -58,6 +58,7 @@ export class ColonyRunner extends ColonyBaseClass {
 
   public preTick(): void {
     // this.logger.log("preTick");
+    this.pathFinder.preTick();
     this.creepSpawnQueue.preTick();
     this.groupRunner.preTick();
   }
@@ -72,6 +73,7 @@ export class ColonyRunner extends ColonyBaseClass {
 
   public postTick(): void {
     // this.logger.log("postTick");
+    this.pathFinder.postTick();
     this.groupRunner.postTick();
   }
 
@@ -87,9 +89,10 @@ export class ColonyRunner extends ColonyBaseClass {
     const depositPool = Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(this.room, DEPOSIT_ID));
     this.creepSpawnQueue.spawnIds.forEach((spawnId) => {
       const spawnEntityWrapper = getWrapperById(spawnId) as EntityWrapper<StructureSpawn>;
+      if (spawnEntityWrapper.entity.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return;
       depositPool.updateCurrentWeight(spawnEntityWrapper, -1,
         spawnEntityWrapper.entity.store.getCapacity(RESOURCE_ENERGY));
-      this.logger.log(`spawnId=${spawnId} energy=${spawnEntityWrapper.entity.store[RESOURCE_ENERGY]}`);
+      this.logger.log(`spawnId=${spawnId} energy=${spawnEntityWrapper.entity.store[RESOURCE_ENERGY]} weight=${depositPool.weights[spawnId]}`);
     });
   }
 }

@@ -116,9 +116,9 @@ export class PathBuilderTest extends MemoryMockTestBase {
     const {pathBuilder, pathFinderData} = this.getPathFinderInstances();
     paths.forEach(path => pathBuilder.addRoad(deserializePath(path)));
 
-    // visualize(MAX_X, MAX_Y, pathFinderData.roadPosMap);
-    // pathFinderData.roads.forEach((road, roadIdx) => console.log(`${roadIdx}`, road.connections));
-    // pathFinderData.roads.forEach((road, roadIdx) => console.log(`${roadIdx}`, road.indirectConnections));
+    visualize(MAX_X, MAX_Y, pathFinderData.roadPosMap);
+    pathFinderData.roads.forEach((road, roadIdx) => console.log(`${roadIdx}`, road.connections));
+    pathFinderData.roads.forEach((road, roadIdx) => console.log(`${roadIdx}`, road.indirectConnections));
     // console.log(pathFinderData.roadPosMap, pathFinderData.posToRoadMap);
 
     should(pathFinderData.roads.length).be.equal(connections.length);

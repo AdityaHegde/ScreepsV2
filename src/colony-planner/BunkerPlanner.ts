@@ -35,7 +35,7 @@ export class BunkerPlanner extends Planner {
         roadPos[0] += colonyPlanner.center[0];
         roadPos[1] += colonyPlanner.center[1];
       });
-      colonyPlanner.pathFinder.addRoad(rawRoad);
+      colonyPlanner.pathFinder.pathBuilder.addRoad(rawRoad);
     });
   }
 

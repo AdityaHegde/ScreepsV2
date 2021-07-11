@@ -9,6 +9,9 @@ export type RoadDirection = [forward: number, backwards: number];
 export type RoadConnection = number;
 export type RoadIndirectConnection = [roadIdx: number, distance: number];
 export type RoadConnectionEntry = [curRoadPosIdx: number, destRoadIdx: number, destRoadConnectionIdx: number];
+export const RoadConnectionCurRoadPosIdx = 0;
+export const RoadConnectionDestRoadIdx = 1;
+export const RoadConnectionDestRoadConnectionIdx = 2;
 
 @MemoryClass("road")
 export class Road extends BaseClass {
@@ -92,7 +95,7 @@ export class Road extends BaseClass {
 
   public getConnectionDestRoadPosIdx(destRoadIdx: number, destRoadConnectionIdx: number): number {
     // console.log(this.roadIdx, destRoadIdx, destRoadConnectionIdx, this.connections);
-    return this.connections[destRoadIdx][destRoadConnectionIdx];
+    return this.connections[destRoadIdx][Math.min(destRoadConnectionIdx, this.connections[destRoadIdx].length - 1)];
   }
 
   public shouldMoveUpThePath(curPos: RoadPos, destRoadPosIdx: number): boolean {
@@ -107,7 +110,7 @@ export class Road extends BaseClass {
     const direction = this.shouldMoveUpThePath(curPos, destRoadPosIdx) ? 0 : 1;
     curPos[1] = (curPos[1] === 0 && direction === 1) ? (this.roadDirections.length - 1) :
       (curPos[1] === this.roadDirections.length - 1 && direction === 0) ? 0 : curPos[1];
-    // console.log("getMoveDirection", `${curPos[1]} => ${destRoadPosIdx}`, direction, this.roadDirections[curPos[1]]);
+    // console.log("getMoveDirection", `${curPos[1]} => ${destRoadPosIdx}`, direction, this.roadDirections.length);
     return this.roadDirections[curPos[1]][direction] as DirectionConstant;
   }
 
@@ -124,7 +127,7 @@ export class Road extends BaseClass {
       roadPosIdx => Math.abs(curPos[1] - roadPosIdx));
     if (destRoadPosIdx === null) return null;
 
-    // console.log("getDirectConnection", curPos, destRoadIdx, destRoadPosIdx, connectionIdx)
+    // console.log("getDirectConnection", curPos, destRoadIdx, destRoadPosIdx, connectionIdx, this.connections[destRoadIdx])
 
     return [destRoadPosIdx, destRoadIdx, connectionIdx];
   }

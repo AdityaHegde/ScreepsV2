@@ -1,7 +1,7 @@
 import {EventLoop} from "../events/EventLoop";
-import {Globals} from "../globals/Globals";
+import {Globals} from "@globals/Globals";
 import {ColonyRunner} from "./ColonyRunner";
-import {Logger} from "../utils/Logger";
+import {Logger} from "@utils/Logger";
 
 export class GameRunner {
   public readonly eventLoop: EventLoop;

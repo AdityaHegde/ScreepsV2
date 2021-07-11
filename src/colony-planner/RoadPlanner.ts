@@ -66,7 +66,7 @@ export class RoadPlanner extends Planner {
       pathFinderPath.path[pathFinderPath.path.length - 1].y,
     ]);
 
-    const roadPos = colonyPlanner.pathFinder.addRoad(rawRoad);
+    const roadPos = colonyPlanner.pathFinder.pathBuilder.addRoad(rawRoad);
 
     return [roadPos, lastPos];
   }
