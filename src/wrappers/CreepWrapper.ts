@@ -1,39 +1,30 @@
 import {EntityWrapper} from "./EntityWrapper";
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
-import {RoadConnectionEntry} from "../pathfinder/Road";
+import {ArrayPos} from "../preprocessing/Prefab";
 import {inMemory} from "@memory/inMemory";
 import {JobParams} from "../entity-group/group/job/JobParams";
+import {RoadConnectionEntry, RoadPos} from "@pathfinder/RoadTypes";
 
 export class CreepWrapper extends EntityWrapper<Creep> {
   @inMemory()
   public power: number;
 
   @inMemory()
-  public pos: RoadPos;
-  @inMemory()
-  public dest: RoadPos;
-  @inMemory()
-  public through: RoadConnectionEntry;
+  public path: Array<DirectionConstant>;
   @inMemory()
   public lastPos: ArrayPos;
-  @inMemory()
-  public destRoadPosIdx: number;
   public currentMoveDirection: DirectionConstant;
   @inMemory()
   public job: JobParams;
 
   public hasReachedDest(): boolean {
-    return this.pos && this.pos[0] === this.dest[0] && this.pos[1] === this.dest[1];
+    return this.path && this.path.length === 0;
   }
   public failedToMove(): boolean {
     return this.lastPos[0] === this.entity.pos.x && this.lastPos[1] === this.entity.pos.y;
   }
-  public clearMovement(newDest: RoadPos = undefined): void {
-    this.pos = undefined;
-    this.dest = newDest;
-    this.through = undefined;
+  public clearMovement(): void {
     this.lastPos = undefined;
-    this.destRoadPosIdx = undefined;
     this.currentMoveDirection = undefined;
+    this.path = undefined;
   }
 }

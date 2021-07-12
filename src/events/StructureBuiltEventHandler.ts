@@ -61,6 +61,7 @@ export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent
   private assignContainer(container: StructureContainer) {
     let containerActionGroup: ContainerActionGroup<any>;
 
+    console.log("assignContainer", JSON.stringify(container.pos))
     if (isNearToRoomPosition(container.pos, container.room.controller.pos, 3)) {
       containerActionGroup = Globals.getGlobal<ControllerUpgradeGroup>(ControllerUpgradeGroup as any,
         getIdFromRoom(container.room, CONTROLLER_ID));

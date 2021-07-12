@@ -4,7 +4,8 @@ import {BuildingTypeToPrefabTypeMap} from "../preprocessing/ParserMetadata";
 import {getWrapperById} from "@wrappers/getWrapperById";
 import {ControllerWrapper} from "@wrappers/ControllerWrapper";
 import {HarvestableEntityType, HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
-import {ArrayPos, BuildingPlan, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos, BuildingPlan} from "../preprocessing/Prefab";
+import {RoadPos} from "@pathfinder/RoadTypes";
 
 export class RoadPlanner extends Planner {
   public toStructureId: string;
@@ -28,10 +29,10 @@ export class RoadPlanner extends Planner {
       colonyPlanner.rclPrefabs[0].unshift(containerBuildingPrefab);
     }
 
-    const [roadPos, roadEndArrayPos] = this.addPathToTarget(colonyPlanner, roadBuildingPlan, containerBuildingPrefab,
+    const [roadPos, adjacentArrayPos, roadEndArrayPos] = this.addPathToTarget(colonyPlanner, roadBuildingPlan, containerBuildingPrefab,
       new RoomPosition(colonyPlanner.center[0], colonyPlanner.center[1], colonyPlanner.room.name), targetEntity.entity.pos, this.range);
 
-    targetEntity.init(roadPos, roadEndArrayPos);
+    targetEntity.init(roadPos, adjacentArrayPos, roadEndArrayPos);
   }
 
   public static getSourceRoadPlans(colonyPlanner: ColonyPlanner): Array<RoadPlanner> {
@@ -46,7 +47,7 @@ export class RoadPlanner extends Planner {
     colonyPlanner: ColonyPlanner,
     roadBuildingPlan: BuildingPlan, containerBuildingPlan: BuildingPlan,
     origin: RoomPosition, target: RoomPosition, range: number,
-  ): [RoadPos, ArrayPos] {
+  ): [RoadPos, ArrayPos, ArrayPos] {
     const pathFinderPath = PathFinder.search(origin, {pos: target, range}, {
       roomCallback: () => {
         return colonyPlanner.costMatrix;
@@ -68,6 +69,6 @@ export class RoadPlanner extends Planner {
 
     const roadPos = colonyPlanner.pathFinder.pathBuilder.addRoad(rawRoad);
 
-    return [roadPos, lastPos];
+    return [roadPos, lastPos, rawRoad[rawRoad.length - 1]];
   }
 }

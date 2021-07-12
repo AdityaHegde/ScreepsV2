@@ -9,6 +9,8 @@ import {getWrapperById} from "@wrappers/getWrapperById";
 import {EntityWrapper} from "@wrappers/EntityWrapper";
 import {CreepsSpawner} from "../creeps-manager/CreepsSpawner";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
+import {Traveler} from "@pathfinder/Traveler";
+import {isNearToArrayPos} from "@pathfinder/PathUtils";
 
 export class ContainerActionGroup<ContainerActionGroupTargetType extends
   (ControllerWrapper | HarvestableEntityWrapper<HarvestableEntityType>)> extends CreepGroup {
@@ -46,14 +48,18 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
 
     this.forEachEntityWrapper((creepWrapper) => {
       if (creepWrapper.task === 0) {
-        creepWrapper.dest = this.target.roadPos;
-        if (creepWrapper.hasReachedDest() && creepWrapper.entity.fatigue === 0) {
-          creepWrapper.task = 1;
-          creepWrapper.clearMovement();
-          reachedCreepWrapper = creepWrapper;
-          this.logger.log(`reached ${creepWrapper.entity.pos.x},${creepWrapper.entity.pos.y}`);
+        if (isNearToArrayPos(creepWrapper.arrayPos, this.target.roadEndArrayPos, 0)) {
+          if (creepWrapper.entity.fatigue === 0) {
+            creepWrapper.task = 1;
+            creepWrapper.clearMovement();
+            reachedCreepWrapper = creepWrapper;
+            this.logger.log(`reached ${creepWrapper.entity.pos.x},${creepWrapper.entity.pos.y}`);
+          }
         } else {
-          this.pathFinder.pathNavigator.move(creepWrapper, null);
+          this.pathFinder.pathNavigator.move(creepWrapper, this.target.roadEndArrayPos);
+          // Traveler.travelTo(creepWrapper.entity,
+          //   new RoomPosition(this.target.roadEndArrayPos[0], this.target.roadEndArrayPos[1], this.room.name),
+          //   {range: 0});
           return;
         }
       }

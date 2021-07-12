@@ -6,15 +6,14 @@ import {
   getPosTowardsDirection,
   ROTATE_180_DEG, rotateDirection
 } from "./PathUtils";
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos} from "../preprocessing/Prefab";
+import {Logger} from "@utils/Logger";
+import {CreepWrapper} from "@wrappers/CreepWrapper";
 import {
   RoadConnectionCurRoadPosIdx,
   RoadConnectionDestRoadConnectionIdx,
-  RoadConnectionDestRoadIdx,
-  RoadConnectionEntry
-} from "./Road";
-import {Logger} from "@utils/Logger";
-import {CreepWrapper} from "@wrappers/CreepWrapper";
+  RoadConnectionDestRoadIdx, RoadConnectionEntry, RoadPos, RoadPosDirectionIdx, RoadPosRoadIdx, RoadPosRoadPosIdx
+} from "@pathfinder/RoadTypes";
 
 // failed to move for some reason, ie creep.move returned non OK
 export const MOVE_FAILED = "failed";
@@ -37,53 +36,44 @@ export class PathNavigator {
     this.pathFinderData.movedCreepWrapperIds.forEach((movedCreepWrapperId) => {
       const movedCreepWrapper = CreepWrapper.getEntityWrapper<CreepWrapper>(movedCreepWrapperId);
 
-      if (!movedCreepWrapper.entity || movedCreepWrapper.failedToMove() ||
-        !movedCreepWrapper.pos || !movedCreepWrapper.dest) return;
+      if (!movedCreepWrapper.entity || movedCreepWrapper.failedToMove()) return;
 
       const oldKey = getKeyFromArrayPos(movedCreepWrapper.lastPos);
       if (this.pathFinderData.creepsInRoad[oldKey] === movedCreepWrapper.id) {
         delete this.pathFinderData.creepsInRoad[oldKey];
       }
       const newKey = getKeyFromArrayXY(movedCreepWrapper.entity.pos.x, movedCreepWrapper.entity.pos.y);
+      // only add if the new pos in on a road
       if (newKey in this.pathFinderData.roadPosMap) {
         this.pathFinderData.creepsInRoad[newKey] = movedCreepWrapper.id;
       }
 
-      this.pathFinderData.roads[movedCreepWrapper.pos[0]].updatePos(movedCreepWrapper.pos, movedCreepWrapper.destRoadPosIdx);
       movedCreepWrapper.currentMoveDirection = undefined;
+      movedCreepWrapper.path.shift();
 
-      if (movedCreepWrapper.pos[0] === movedCreepWrapper.dest[0]) return;
-
-      if (movedCreepWrapper.through && movedCreepWrapper.pos[1] === movedCreepWrapper.through[RoadConnectionCurRoadPosIdx]) {
-        movedCreepWrapper.pos = [
-          movedCreepWrapper.through[RoadConnectionDestRoadIdx],
-          this.pathFinderData.roads[movedCreepWrapper.through[RoadConnectionDestRoadIdx]]
-            .getConnectionDestRoadPosIdx(movedCreepWrapper.pos[0], movedCreepWrapper.through[RoadConnectionDestRoadConnectionIdx]),
-        ];
-        movedCreepWrapper.through = undefined;
-      }
     });
     this.pathFinderData.preTick();
   }
 
-  public move(creepWrapper: CreepWrapper, pos: RoomPosition): void {
+  public move(creepWrapper: CreepWrapper, pos: ArrayPos, shouldMoveIntoTarget = false): void {
     if (creepWrapper.entity.fatigue > 0) return;
 
-    creepWrapper.lastPos = [creepWrapper.entity.pos.x, creepWrapper.entity.pos.y];
-
-    // TODO: move this to creep creation to avoid checking this every move
-    if (!creepWrapper.pos) {
-      creepWrapper.pos = this.acquireRoadPosFromRoomPosition(creepWrapper.entity.pos);
-    }
-    if (!creepWrapper.dest) {
-      creepWrapper.dest = this.acquireRoadPosFromRoomPosition(pos);
+    if (!creepWrapper.path) {
+      creepWrapper.path = this.getPath(creepWrapper, pos, shouldMoveIntoTarget);
     }
 
-    if (creepWrapper.pos[0] === creepWrapper.dest[0]) {
-      this.handleSamePathTravel(creepWrapper, creepWrapper.dest[1]);
-    } else {
-      this.handleThroughPathTravel(creepWrapper);
+    creepWrapper.currentMoveDirection = creepWrapper.path[0];
+
+    const newKey = getKeyFromArrayPos(getPosTowardsDirection(
+      [creepWrapper.entity.pos.x, creepWrapper.entity.pos.y], creepWrapper.currentMoveDirection));
+    if (newKey in this.pathFinderData.creepsInRoad) {
+      if (!this.pathFinderData.moveConflictPoints.has(newKey)) {
+        this.pathFinderData.moveConflictPoints.set(newKey, [creepWrapper.id]);
+      } else {
+        this.pathFinderData.moveConflictPoints.get(newKey).push(creepWrapper.id);
+      }
     }
+    this.pathFinderData.queuedCreepWrappers.push(creepWrapper);
   }
 
   public moveOutOfNetwork(creepWrapper: CreepWrapper): void {
@@ -94,37 +84,21 @@ export class PathNavigator {
   }
 
   public postTick(): void {
-    const conflictCreeps = new Set<string>();
-    const processedConflictPoint = new Set<string>();
-
-    this.pathFinderData.moveConflictPoints.forEach((moveConflictPoint) => {
-      if (processedConflictPoint.has(moveConflictPoint)) return;
-      const selectedCreepWrapper = this.pathFinderData.moveTargetPoints[moveConflictPoint][0];
-
-      if (moveConflictPoint in this.pathFinderData.creepsInRoad) {
-        const existingCreepWrapper =
-          CreepWrapper.getEntityWrapper<CreepWrapper>(this.pathFinderData.creepsInRoad[moveConflictPoint]);
-        if (existingCreepWrapper.currentMoveDirection) {
-          // TODO
-        } else {
-          existingCreepWrapper.currentMoveDirection =
-            rotateDirection(selectedCreepWrapper.currentMoveDirection, ROTATE_180_DEG);
-          existingCreepWrapper.lastPos = [existingCreepWrapper.entity.pos.x, existingCreepWrapper.entity.pos.y];
-          this.pathFinderData.queuedCreepWrappers.push(existingCreepWrapper);
-        }
-      }
-
-      for (let i = 1; i < this.pathFinderData.moveTargetPoints[moveConflictPoint].length; i++) {
-        conflictCreeps.add(this.pathFinderData.moveTargetPoints[moveConflictPoint][i].id);
+    this.pathFinderData.moveConflictPoints.forEach((conflictingCreeps, moveConflictPoint) => {
+      const selectedCreepWrapper = CreepWrapper.getEntityWrapper<CreepWrapper>(conflictingCreeps[0]);
+      const existingCreepWrapper =
+        CreepWrapper.getEntityWrapper<CreepWrapper>(this.pathFinderData.creepsInRoad[moveConflictPoint]);
+      if (!existingCreepWrapper.currentMoveDirection) {
+        existingCreepWrapper.currentMoveDirection =
+          rotateDirection(selectedCreepWrapper.currentMoveDirection, ROTATE_180_DEG);
+        this.pathFinderData.queuedCreepWrappers.push(existingCreepWrapper);
       }
     });
 
     this.pathFinderData.queuedCreepWrappers.forEach((queuedCreepWrapper) => {
-      if (conflictCreeps.has(queuedCreepWrapper.id)) return;
+      queuedCreepWrapper.lastPos = [queuedCreepWrapper.entity.pos.x, queuedCreepWrapper.entity.pos.y];
       this.logger.setRoom(queuedCreepWrapper.entity.room).setEntityWrapper(queuedCreepWrapper)
-        .log(`Moving along pos=${queuedCreepWrapper.pos?.toString()} dest=${queuedCreepWrapper.dest?.toString()} ` +
-          `road=${queuedCreepWrapper.pos?.[0]} direction=${queuedCreepWrapper.currentMoveDirection} ` +
-          `destRoadPosIdx=${queuedCreepWrapper.destRoadPosIdx} ` +
+        .log(`Moving in direction=${queuedCreepWrapper.currentMoveDirection} distance=${queuedCreepWrapper.path.length} ` +
           `roomPosition=${queuedCreepWrapper.entity.pos.x},${queuedCreepWrapper.entity.pos.y}`);
       if (queuedCreepWrapper.entity.move(queuedCreepWrapper.currentMoveDirection) === OK) {
         this.pathFinderData.movedCreepWrapperIds.push(queuedCreepWrapper.id);
@@ -155,55 +129,59 @@ export class PathNavigator {
     }
   }
 
-  private handleThroughPathTravel(creepWrapper: CreepWrapper): void {
-    if (!creepWrapper.through) {
-      creepWrapper.through = this.acquireThroughRoadPos(creepWrapper.pos, creepWrapper.dest);
+  private getPath(creepWrapper: CreepWrapper, targetArrayPos: ArrayPos, shouldMoveIntoTarget = false): Array<DirectionConstant> {
+    const path = new Array<DirectionConstant>();
+
+    const curRoadPos = this.acquireRoadPosFromRoomPosition(creepWrapper.entity.pos);
+    const endRoadPos = this.acquireRoadPosFromArrayPos(targetArrayPos);
+
+    // if creep has moved out of road, add a direction to move it back in.
+    if (curRoadPos[RoadPosDirectionIdx]) {
+      path.push(rotateDirection(curRoadPos[RoadPosDirectionIdx], ROTATE_180_DEG));
     }
 
-    // if creep is already at connection point
-    if (creepWrapper.pos[1] === creepWrapper.through[RoadConnectionCurRoadPosIdx]) {
-      creepWrapper.pos = [
-        creepWrapper.through[RoadConnectionDestRoadIdx],
-        this.pathFinderData.roads[creepWrapper.through[RoadConnectionDestRoadIdx]]
-          .getConnectionDestRoadPosIdx(creepWrapper.pos[0], creepWrapper.through[RoadConnectionDestRoadConnectionIdx]),
-      ];
-      if (creepWrapper.pos[0] === creepWrapper.dest[0]) {
-        this.handleSamePathTravel(creepWrapper, creepWrapper.dest[1]);
-        return;
+    while (curRoadPos[RoadPosRoadIdx] !== endRoadPos[RoadPosRoadIdx] ||
+    curRoadPos[RoadPosRoadPosIdx] !== endRoadPos[RoadPosRoadPosIdx]) {
+      let immediateEndRoadIdx: number;
+      let immediateEndRoadPosIdx: number;
+      let throughRoad: RoadConnectionEntry;
+
+      if (curRoadPos[RoadPosRoadIdx] === endRoadPos[RoadPosRoadIdx]) {
+        // same road travel
+        immediateEndRoadIdx = endRoadPos[RoadPosRoadIdx];
+        immediateEndRoadPosIdx = endRoadPos[RoadPosRoadPosIdx];
       } else {
-        creepWrapper.through = this.acquireThroughRoadPos(creepWrapper.pos, creepWrapper.dest);
+        // through road travel
+        throughRoad = this.acquireThroughRoadPos(curRoadPos, endRoadPos);
+        immediateEndRoadIdx = throughRoad[RoadConnectionDestRoadIdx];
+        immediateEndRoadPosIdx = throughRoad[RoadConnectionCurRoadPosIdx];
       }
+
+      // console.log(`(${curRoadPos.toString()}) => (${immediateEndRoadIdx},${immediateEndRoadPosIdx}) => (${endRoadPos.toString()})`);
+
+      path.push(...this.pathFinderData.roads[curRoadPos[RoadPosRoadIdx]]
+        .getRoadPath(curRoadPos[RoadPosRoadPosIdx], immediateEndRoadPosIdx));
+
+      if (throughRoad) {
+        curRoadPos[RoadPosRoadPosIdx] = this.pathFinderData.roads[immediateEndRoadIdx]
+          .getConnectionDestRoadPosIdx(curRoadPos[RoadPosRoadIdx], throughRoad[RoadConnectionDestRoadConnectionIdx]);
+      } else {
+        curRoadPos[RoadPosRoadPosIdx] = immediateEndRoadPosIdx;
+      }
+      curRoadPos[RoadPosRoadIdx] = immediateEndRoadIdx;
     }
 
-    if (!creepWrapper.through) return;
+    // if end pos is outside the road add the direction towards it
+    if (endRoadPos[RoadPosDirectionIdx] && shouldMoveIntoTarget) {
+      path.push(endRoadPos[RoadPosDirectionIdx]);
+    }
 
-    this.handleSamePathTravel(creepWrapper, creepWrapper.through[0]);
+    return path;
   }
 
   private acquireThroughRoadPos(roadPos: RoadPos, destRoadPos: RoadPos): RoadConnectionEntry {
     const connection = this.pathFinderData.roads[roadPos[0]].getConnection(roadPos, destRoadPos[0]);
     if (!connection) return null;
     return [...connection];
-  }
-
-  private handleSamePathTravel(creepWrapper: CreepWrapper, destRoadPosIdx: number): void {
-    const road = this.pathFinderData.roads[creepWrapper.pos[0]];
-    const direction = road.getMoveDirection(creepWrapper.pos, destRoadPosIdx);
-
-    creepWrapper.destRoadPosIdx = destRoadPosIdx;
-    creepWrapper.currentMoveDirection = direction;
-
-    this.pathFinderData.queuedCreepWrappers.push(creepWrapper);
-    const moveToKey = getKeyFromArrayPos(getPosTowardsDirection(
-      [creepWrapper.entity.pos.x, creepWrapper.entity.pos.y], direction));
-    if (moveToKey in this.pathFinderData.moveTargetPoints) {
-      this.pathFinderData.moveTargetPoints[moveToKey].push(creepWrapper);
-    } else {
-      this.pathFinderData.moveTargetPoints[moveToKey] = [creepWrapper];
-    }
-    if (this.pathFinderData.moveTargetPoints[moveToKey].length === 2 ||
-      (moveToKey in this.pathFinderData.creepsInRoad)) {
-      this.pathFinderData.moveConflictPoints.add(moveToKey);
-    }
   }
 }

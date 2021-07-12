@@ -1,7 +1,8 @@
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos} from "../preprocessing/Prefab";
 import {getKeyFromArrayPos} from "./PathUtils";
 import {RoadIntersections} from "./RoadIntersections";
 import {PathFinderData} from "./PathFinderData";
+import {RoadPos} from "@pathfinder/RoadTypes";
 
 export class PathBuilder {
   public readonly pathFinderData: PathFinderData;

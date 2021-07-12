@@ -1,7 +1,8 @@
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos} from "../preprocessing/Prefab";
 import {CreepWrapper} from "../wrappers/CreepWrapper";
 import {getDirectionBetweenPos} from "../pathfinder/PathUtils";
 import {PathNavigator} from "@pathfinder/PathNavigator";
+import {RoadPos} from "@pathfinder/RoadTypes";
 
 export interface PositionsEntity {
   roadPos: RoadPos;

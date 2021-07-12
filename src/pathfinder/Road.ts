@@ -1,17 +1,17 @@
 import {BaseClass} from "../BaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos} from "../preprocessing/Prefab";
 import {getDirectionBetweenPos, isAdjacentToPos, ROTATE_180_DEG, rotateDirection} from "./PathUtils";
 import {findInArray} from "../utils/StatsUtils";
-
-export type RoadDirection = [forward: number, backwards: number];
-export type RoadConnection = number;
-export type RoadIndirectConnection = [roadIdx: number, distance: number];
-export type RoadConnectionEntry = [curRoadPosIdx: number, destRoadIdx: number, destRoadConnectionIdx: number];
-export const RoadConnectionCurRoadPosIdx = 0;
-export const RoadConnectionDestRoadIdx = 1;
-export const RoadConnectionDestRoadConnectionIdx = 2;
+import {
+  RoadBackwardsDirectionIdx,
+  RoadConnection,
+  RoadConnectionEntry,
+  RoadDirection, RoadForwardsDirectIdx,
+  RoadIndirectConnection,
+  RoadPos
+} from "@pathfinder/RoadTypes";
 
 @MemoryClass("road")
 export class Road extends BaseClass {
@@ -38,7 +38,7 @@ export class Road extends BaseClass {
 
   public addArrayOfPos(arrayOfPos: Array<ArrayPos>): this {
     for (let i = 0; i < arrayOfPos.length; i++) {
-      const roadDirection: RoadDirection = [0, 0];
+      const roadDirection: RoadDirection = [0 as any, 0 as any];
 
       if (i < arrayOfPos.length - 1) {
         roadDirection[0] = getDirectionBetweenPos(arrayOfPos[i], arrayOfPos[i + 1]);
@@ -55,7 +55,7 @@ export class Road extends BaseClass {
       if (loopDirection !== -2) {
         if (loopDirection) {
           this.roadDirections[this.roadDirections.length - 1][0] = loopDirection;
-          this.roadDirections.push([0, rotateDirection(loopDirection, ROTATE_180_DEG)]);
+          this.roadDirections.push([0 as any, rotateDirection(loopDirection, ROTATE_180_DEG)]);
         }
         this.addDirectConnection(this.roadIdx, 0);
         this.addDirectConnection(this.roadIdx, this.roadDirections.length - 1);
@@ -98,24 +98,45 @@ export class Road extends BaseClass {
     return this.connections[destRoadIdx][Math.min(destRoadConnectionIdx, this.connections[destRoadIdx].length - 1)];
   }
 
-  public shouldMoveUpThePath(curPos: RoadPos, destRoadPosIdx: number): boolean {
-    let moveUpThPath = curPos[1] < destRoadPosIdx;
-    if (this.isCircular && Math.abs(curPos[1] - destRoadPosIdx) > (this.roadDirections.length / 2)) {
+  public shouldMoveUpThePath(curPosIdx: number, destRoadPosIdx: number): boolean {
+    let moveUpThPath = curPosIdx < destRoadPosIdx;
+    if (this.isCircular && Math.abs(curPosIdx - destRoadPosIdx) > (this.roadDirections.length / 2)) {
       moveUpThPath = !moveUpThPath;
     }
     return moveUpThPath;
   }
 
   public getMoveDirection(curPos: RoadPos, destRoadPosIdx: number): DirectionConstant {
-    const direction = this.shouldMoveUpThePath(curPos, destRoadPosIdx) ? 0 : 1;
+    const direction = this.shouldMoveUpThePath(curPos[1], destRoadPosIdx) ? 0 : 1;
     curPos[1] = (curPos[1] === 0 && direction === 1) ? (this.roadDirections.length - 1) :
       (curPos[1] === this.roadDirections.length - 1 && direction === 0) ? 0 : curPos[1];
     // console.log("getMoveDirection", `${curPos[1]} => ${destRoadPosIdx}`, direction, this.roadDirections.length);
-    return this.roadDirections[curPos[1]][direction] as DirectionConstant;
+    return this.roadDirections[curPos[1]][direction];
   }
 
   public updatePos(pos: RoadPos, destRoadPosIdx: number): void {
-    pos[1] += this.shouldMoveUpThePath(pos, destRoadPosIdx) ? 1 : -1;
+    pos[1] += this.shouldMoveUpThePath(pos[1], destRoadPosIdx) ? 1 : -1;
+  }
+
+  public getRoadPath(startRoadPosIdx: number, endRoadPosIdx: number): Array<DirectionConstant> {
+    const path = new Array<DirectionConstant>();
+    const moveDirection = this.shouldMoveUpThePath(startRoadPosIdx, endRoadPosIdx) ? RoadForwardsDirectIdx : RoadBackwardsDirectionIdx;
+    const incrementDirection = moveDirection === RoadForwardsDirectIdx ? 1 : -1;
+    for (let roadDirectionIdx = startRoadPosIdx; roadDirectionIdx !== endRoadPosIdx; ) {
+      if (this.isCircular) {
+        if (roadDirectionIdx === 0 && incrementDirection === -1) {
+          roadDirectionIdx = this.roadDirections.length - 1;
+        } else if (roadDirectionIdx === this.roadDirections.length - 1 && incrementDirection === 1) {
+          roadDirectionIdx = 0;
+        }
+        if (roadDirectionIdx === endRoadPosIdx) break;
+      }
+      // console.log(`${roadDirectionIdx} + ${incrementDirection}(${moveDirection}) :`,
+      //   `${startRoadPosIdx} => ${endRoadPosIdx}`, this.roadDirections[roadDirectionIdx]);
+      path.push(this.roadDirections[roadDirectionIdx][moveDirection]);
+      roadDirectionIdx += incrementDirection;
+    }
+    return path;
   }
 
   private hasDirectConnection(destRoadIdx: number): boolean {

@@ -1,4 +1,5 @@
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos} from "../preprocessing/Prefab";
+import {RoadPos} from "@pathfinder/RoadTypes";
 
 export const DIRECTION_TO_OFFSET: {
   [direction in DirectionConstant]: ArrayPos

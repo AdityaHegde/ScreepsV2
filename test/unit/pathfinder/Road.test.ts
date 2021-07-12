@@ -1,8 +1,9 @@
 import {MemoryMockTestBase} from "../../utils/MemoryMockTestBase";
 import {DataProviderData} from "../../utils/TestBase";
-import {Road, RoadDirection} from "../../../src/pathfinder/Road";
+import {Road} from "../../../src/pathfinder/Road";
 import {deserializePath} from "../../utils/PathTestUtils";
 import should from "should";
+import {RoadDirection} from "@pathfinder/RoadTypes";
 
 @MemoryMockTestBase.Suite
 export class RoadTest extends MemoryMockTestBase {

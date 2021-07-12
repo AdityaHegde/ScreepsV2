@@ -15,8 +15,15 @@ export class EntityPool extends ColonyBaseClass {
   @inMemory(() => {return {}})
   public weights: Record<string, number>;
 
+  public shouldRotate: boolean;
+
   public freeEntityWrappers: Array<EntityWrapper<BaseEntityType>>;
   public preTickRun = false;
+
+  public constructor(id: string, room: Room, shouldRotate = false) {
+    super(id, room);
+    this.shouldRotate = shouldRotate;
+  }
 
   public preTick(): void {
     if (this.preTickRun) return;
@@ -48,7 +55,6 @@ export class EntityPool extends ColonyBaseClass {
     if (this.weights[entityWrapper.id] > 0) {
       this.freeEntityWrappers?.push(entityWrapper);
     }
-    console.log("addEntityWrapper", entityWrapper.id, this.weights[entityWrapper.id]);
   }
 
   public updateCurrentWeight(entityWrapper: EntityWrapper<BaseEntityType>, curWeightOffset: number, maxWeight: number): void {
@@ -59,7 +65,6 @@ export class EntityPool extends ColonyBaseClass {
     if (wasNotFree) {
       this.freeEntityWrappers.push(entityWrapper);
     }
-    console.log("updateCurrentWeight", entityWrapper.id, this.weights[entityWrapper.id]);
   }
 
   public removeEntityWrapper(entityWrapper: EntityWrapper<BaseEntityType>): void {
@@ -96,7 +101,9 @@ export class EntityPool extends ColonyBaseClass {
     if (this.weights[claimedEntityWrapper.id] <= 0) {
       this.freeEntityWrappers.splice(claimedEntityWrapperIdx, 1);
     }
-    this.cursor = (this.cursor + 1) % this.entityWrapperIds.length;
+    if (this.shouldRotate) {
+      this.cursor = (this.cursor + 1) % this.entityWrapperIds.length;
+    }
 
     return claimedEntityWrapper;
   }

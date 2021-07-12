@@ -1,9 +1,6 @@
-export type ArrayPos = [x: number, y: number, roomName?: string];
+import {RoadPos} from "@pathfinder/RoadTypes";
 
-export type RoadPos = [roadIdx: number, roadPosIdx: number, direction?: number];
-export const RoadPosRoadIdx = 0;
-export const RoadPosRoadPosIdx = 1;
-export const RoadPosDirectionIdx = 3;
+export type ArrayPos = [x: number, y: number, roomName?: string];
 
 export type BuildingPos = [Array<RoadPos>, ArrayPos];
 export type BuildingPrefab = [

@@ -30,12 +30,14 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
   public subTask: number;
 
   public arrayPos: ArrayPos;
+  public roomPos: RoomPosition;
 
   public constructor(id: string) {
     super(id);
     this.entity = this.getEntityById(id);
     if (this.entity) {
       this.arrayPos = [this.entity.pos.x, this.entity.pos.y];
+      this.roomPos = this.entity.pos;
     }
   }
 

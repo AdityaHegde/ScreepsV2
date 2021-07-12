@@ -8,7 +8,7 @@ import {ResourceEntityPool} from "../entity-group/entity-pool/ResourceEntityPool
 function getSourceEntityPool(room: Room): EntityPool {
   const id = getIdFromRoom(room, SOURCE_ID);
   return Globals.getGlobal(ResourceEntityPool as any, id, () =>
-    Globals.addGlobal(new ResourceEntityPool(getIdFromRoom(room, SOURCE_ID), room)));
+    Globals.addGlobal(new ResourceEntityPool(getIdFromRoom(room, SOURCE_ID), room, true)));
 }
 
 export function getHaulNetworks(room: Room): Array<JobNetwork> {

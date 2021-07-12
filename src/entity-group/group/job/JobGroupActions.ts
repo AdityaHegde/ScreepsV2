@@ -6,6 +6,8 @@ export class JobGroupActions {
   public readonly targetWeightMultiplier: number;
   public readonly room: Room;
 
+  public readonly range: number = 1;
+
   public constructor(room: Room, targetWeightMultiplier: number) {
     this.room = room;
     this.targetWeightMultiplier = targetWeightMultiplier;

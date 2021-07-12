@@ -16,6 +16,7 @@ import {
   JobTargetIdIdx,
 } from "./JobParams";
 import {getWrapperById} from "@wrappers/getWrapperById";
+import {Traveler} from "@pathfinder/Traveler";
 
 export class JobGroup extends CreepGroup {
   @inMemory(() => [])
@@ -55,18 +56,21 @@ export class JobGroup extends CreepGroup {
     });
   }
 
-  private moveCreepWrapper(creepWrapper: CreepWrapper, moveTargetWrapper: EntityWrapper<BaseEntityType>): boolean {
-    if (creepWrapper.hasReachedDest() ||
-        isNearToArrayPos(creepWrapper.arrayPos, moveTargetWrapper.arrayPos)) return true;
-    this.pathFinder.pathNavigator.move(creepWrapper, null);
-    return false;
+  private moveCreepWrapper(creepWrapper: CreepWrapper, moveTargetWrapper: EntityWrapper<BaseEntityType>): void {
+    if (moveTargetWrapper.arrayPos) {
+      // Traveler.travelTo(creepWrapper.entity, moveTargetWrapper.roomPos, {range: 1});
+      this.pathFinder.pathNavigator.move(creepWrapper, moveTargetWrapper.arrayPos);
+    }
   }
 
   // task = 0
   private sourceAction(creepWrapper: CreepWrapper) {
     const sourceWrapper = getWrapperById(creepWrapper.job[JobSourceIdIdx]);
 
-    if (!this.moveCreepWrapper(creepWrapper, sourceWrapper)) return;
+    if (!isNearToArrayPos(creepWrapper.arrayPos, sourceWrapper.arrayPos)) {
+      this.moveCreepWrapper(creepWrapper, sourceWrapper);
+      return;
+    }
 
     if (!sourceWrapper?.isValid()) {
       this.logger.log(`Invalid source. job=${creepWrapper.job.toString()}`);
@@ -82,7 +86,7 @@ export class JobGroup extends CreepGroup {
       return;
     }
 
-    creepWrapper.clearMovement(this.getTargetPos(creepWrapper.job));
+    creepWrapper.clearMovement();
     creepWrapper.task = 1;
   }
 
@@ -94,7 +98,10 @@ export class JobGroup extends CreepGroup {
       this.endJob(creepWrapper);
       return;
     }
-    if (!this.moveCreepWrapper(creepWrapper, targetWrapper)) return;
+    if (!isNearToArrayPos(creepWrapper.arrayPos, targetWrapper.arrayPos, this.jobGroupActions.range)) {
+      this.moveCreepWrapper(creepWrapper, targetWrapper);
+      return;
+    }
 
     const targetActionReturn = this.jobGroupActions.targetAction(creepWrapper, targetWrapper);
     if (targetActionReturn !== OK) {
@@ -127,16 +134,7 @@ export class JobGroup extends CreepGroup {
     if (!claimedJob) return false;
 
     creepWrapper.job = claimedJob;
-    creepWrapper.dest = this.getSourcePos(creepWrapper.job);
     return true;
-  }
-
-  private getSourcePos(jobParams: JobParams) {
-    return this.pathFinder.pathNavigator.acquireRoadPosFromArrayPos(getWrapperById(jobParams[JobSourceIdIdx]).arrayPos);
-  }
-
-  private getTargetPos(jobParams: JobParams) {
-    return this.pathFinder.pathNavigator.acquireRoadPosFromArrayPos(getWrapperById(jobParams[JobTargetIdIdx]).arrayPos);
   }
 
   private endJob(creepWrapper: CreepWrapper): void {

@@ -24,7 +24,6 @@ export class HarvestGroup<HarvestableEntityWrapperSelect extends HarvestableEnti
       creepWrapper.entity.drop(this.target.entity.resourceType);
       this.hasHaul = false;
     } else if (!this.hasHaul && freeCapacity <= creepWrapper.power * this.target.entity.harvestPower * 10) {
-      console.log("Adding haul job");
       Globals.getGlobal<ResourceEntityPool>(ResourceEntityPool as any, getIdFromRoom(this.room, SOURCE_ID))
         .addResource(Game.time + 5, creepWrapper.arrayPos[0], creepWrapper.arrayPos[1], resourceType, creepWrapper.entity.store.getCapacity());
       this.hasHaul = true;

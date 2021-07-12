@@ -1,6 +1,6 @@
 import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
-import {ArrayPos, RoadPos} from "../preprocessing/Prefab";
+import {ArrayPos} from "../preprocessing/Prefab";
 import {Road} from "./Road";
 import {ColonyBaseClass} from "../ColonyBaseClass";
 import {RoadIntersections} from "@pathfinder/RoadIntersections";
@@ -8,6 +8,7 @@ import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {getKeyFromArrayPos} from "@pathfinder/PathUtils";
 import {findInArray} from "@utils/StatsUtils";
 import {CreepWrapper} from "@wrappers/CreepWrapper";
+import {RoadPos} from "@pathfinder/RoadTypes";
 
 @MemoryClass("pathFinder")
 export class PathFinderData extends ColonyBaseClass {
@@ -33,8 +34,7 @@ export class PathFinderData extends ColonyBaseClass {
   public roads: Array<Road>;
 
   public queuedCreepWrappers: Array<CreepWrapper>;
-  public moveTargetPoints: Record<string, Array<CreepWrapper>>;
-  public moveConflictPoints: Set<string>;
+  public moveConflictPoints: Map<string, Array<string>>;
 
   public constructor(id: string, room: Room) {
     super(id, room);
@@ -44,8 +44,7 @@ export class PathFinderData extends ColonyBaseClass {
   public preTick(): void {
     this.movedCreepWrapperIds = [];
     this.queuedCreepWrappers = [];
-    this.moveTargetPoints = {};
-    this.moveConflictPoints = new Set();
+    this.moveConflictPoints = new Map();
   }
 
   public addRoadFromRawRoad(rawRoad: Array<ArrayPos>, roadIntersectionsMap: Map<number, RoadIntersections>, startIndex: number): Road {

@@ -1,6 +1,7 @@
 import {DIRECTION_TO_OFFSET, getKeyFromArrayXY} from "@pathfinder/PathUtils";
-import {ArrayPos, RoadPos} from "../../src/preprocessing/Prefab";
+import {ArrayPos} from "../../src/preprocessing/Prefab";
 import _ from "lodash";
+import {RoadPos} from "@pathfinder/RoadTypes";
 
 export const MAX_X = 20;
 export const MAX_Y = 20;

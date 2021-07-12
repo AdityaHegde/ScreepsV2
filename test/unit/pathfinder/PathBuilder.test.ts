@@ -2,9 +2,9 @@ import {MemoryMockTestBase} from "../../utils/MemoryMockTestBase";
 import {deserializePath, MAX_X, MAX_Y, visualize} from "../../utils/PathTestUtils";
 import {DataProviderData} from "../../utils/TestBase";
 import should from "should";
-import {RoadConnection, RoadIndirectConnection} from "@pathfinder/Road";
 import {PathFinderData} from "@pathfinder/PathFinderData";
 import {PathBuilder} from "@pathfinder/PathBuilder";
+import {RoadConnection, RoadIndirectConnection} from "@pathfinder/RoadTypes";
 
 @MemoryMockTestBase.Suite
 export class PathBuilderTest extends MemoryMockTestBase {

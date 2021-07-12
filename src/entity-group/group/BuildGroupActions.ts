@@ -5,12 +5,15 @@ import {EventLoop} from "../../events/EventLoop";
 import {StructureBuiltEventHandler} from "../../events/StructureBuiltEventHandler";
 
 export class BuildGroupActions extends JobGroupActions {
+  public readonly range: number = 3;
+
   public targetAction(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): number {
     if (targetWrapper.entity instanceof ConstructionSite) {
       return creepWrapper.entity.build(targetWrapper.entity);
     } else if (targetWrapper.entity instanceof Structure) {
       return creepWrapper.entity.repair(targetWrapper.entity);
     }
+    console.log(JSON.stringify(targetWrapper.entity));
     return -12;
   }
 
@@ -21,7 +24,7 @@ export class BuildGroupActions extends JobGroupActions {
 
   public actionHasCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): void {
     if (targetWrapper.entity instanceof ConstructionSite &&
-        targetWrapper.entity.progressTotal - targetWrapper.entity.progress > creepWrapper.power * BUILD_POWER) {
+        targetWrapper.entity.progressTotal - targetWrapper.entity.progress <= creepWrapper.power * BUILD_POWER) {
       EventLoop.getEventLoop().addEvent(StructureBuiltEventHandler.getEvent(
         this.room.name, targetWrapper.entity.structureType, targetWrapper.entity.pos.x, targetWrapper.entity.pos.y));
     }

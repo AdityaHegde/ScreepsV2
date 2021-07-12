@@ -42,16 +42,23 @@ export class ResourceEntityPool extends EntityPool {
 
   public addResource(tick: number, x: number, y: number, type: string, weight: number): void {
     const resourceWrapperId = ResourceWrapper.getId(this.room, x, y, type);
+    let resourceWrapper: ResourceWrapper;
 
     const resources = this.room.lookForAt(LOOK_RESOURCES, x, y);
     for (const resource of resources) {
       if (resource.resourceType === type) {
-        this.updateCurrentWeight(getWrapperById(resourceWrapperId), weight, resource.amount + weight);
-        return;
+        resourceWrapper = getWrapperById(resourceWrapperId) as ResourceWrapper;
+        this.updateCurrentWeight(resourceWrapper, weight, resource.amount + weight);
+        break;
       }
     }
 
-    this.addEntityWrapper(new ResourceWrapper(resourceWrapperId).setArrayPos([x, y]), weight);
-    this.futureEntities.push([tick, resourceWrapperId]);
+    if (!resourceWrapper) {
+      resourceWrapper = new ResourceWrapper(resourceWrapperId).setInfo([x, y], this.room.name);
+      this.addEntityWrapper(resourceWrapper, weight);
+    }
+    if (!resourceWrapper.entity) {
+      this.futureEntities.push([tick, resourceWrapperId]);
+    }
   }
 }
