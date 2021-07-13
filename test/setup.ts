@@ -3,7 +3,12 @@ import "../src/globals/MemoryOverrides";
 import _ from "lodash";
 
 (global as any)._ = _;
-(global as any).Room = class {};
+(global as any).Room = class {
+  public name: string;
+  public constructor(name: string) {
+    this.name = name;
+  }
+};
 (global as any).Room.Terrain = class {
   public get() {return 0}
 };
@@ -14,3 +19,7 @@ import _ from "lodash";
   }
 };
 (global as any).Game = {};
+(global as any).StructureController = class {};
+(global as any).Source = class {};
+(global as any).Mineral = class {};
+(global as any).Resource = class {};

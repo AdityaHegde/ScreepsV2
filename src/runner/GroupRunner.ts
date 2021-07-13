@@ -44,7 +44,7 @@ export class GroupRunner extends ColonyBaseClass {
   private handleCreepSpawner(group: CreepGroup) {
     group.creepSpawner.updateBodyParts();
 
-    if (!this.creepSpawnQueue.hasSpaceForCreep(group.id)) return;
+    if (!this.creepSpawnQueue?.hasSpaceForCreep(group.id)) return;
 
     if (group.creepSpawner.shouldSpawnCreeps()) {
       this.creepSpawnQueue.addToQueue(group.creepSpawner.getSpawnQueueEntry());

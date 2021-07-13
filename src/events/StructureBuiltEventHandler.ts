@@ -5,11 +5,9 @@ import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {COLONY_BUILDINGS_ID, CONTROLLER_ID, DEPOSIT_ID, SOURCE_ID} from "../constants";
 import {EntityPool} from "../entity-group/entity-pool/EntityPool";
 import {getWrapperById} from "@wrappers/getWrapperById";
-import {isAdjacentToPos, isNearToRoomPosition} from "@pathfinder/PathUtils";
-import {ControllerWrapper} from "@wrappers/ControllerWrapper";
+import {isNearToRoomPosition} from "@pathfinder/PathUtils";
 import {ContainerActionGroup} from "../entity-group/group/ContainerActionGroup";
 import {ControllerUpgradeGroup} from "../entity-group/group/ControllerUpgradeGroup";
-import {HarvestableEntityType} from "@wrappers/HarvestableEntityWrapper";
 import {HarvestGroup} from "../entity-group/group/HarvestGroup";
 
 export const StructureBuiltEventType = "StructureBuilt";
@@ -29,9 +27,10 @@ const StructureToTargetMap = {
 export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent> {
   public handle(eventEntry: StructureBuiltEvent): boolean {
     const room = Game.rooms[eventEntry.roomName];
-    const sites = room.lookForAt("structure", eventEntry.x, eventEntry.y)
+    const structures = room.lookForAt("structure", eventEntry.x, eventEntry.y)
       .filter(site => site.structureType === eventEntry.buildingType);
-    if (sites.length === 0) {
+    console.log("StructureBuiltEventHandler", JSON.stringify(eventEntry), structures.length);
+    if (structures.length === 0) {
       return true;
     }
 
@@ -42,10 +41,10 @@ export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent
 
     if (eventEntry.buildingType in StructureToTargetMap) {
       Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(room, StructureToTargetMap[eventEntry.buildingType]))
-        ?.addEntityWrapper(getWrapperById(sites[0].id), ((sites[0] as any).store as Store<any, any>)?.getCapacity() ?? 0);
+        ?.addEntityWrapper(getWrapperById(structures[0].id), ((structures[0] as any).store as Store<any, any>)?.getCapacity() ?? 0);
     }
-    if (sites[0].structureType === STRUCTURE_CONTAINER) {
-      this.assignContainer(sites[0] as StructureContainer);
+    if (structures[0].structureType === STRUCTURE_CONTAINER) {
+      this.assignContainer(structures[0] as StructureContainer);
     }
 
     return false;
@@ -61,7 +60,6 @@ export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent
   private assignContainer(container: StructureContainer) {
     let containerActionGroup: ContainerActionGroup<any>;
 
-    console.log("assignContainer", JSON.stringify(container.pos))
     if (isNearToRoomPosition(container.pos, container.room.controller.pos, 3)) {
       containerActionGroup = Globals.getGlobal<ControllerUpgradeGroup>(ControllerUpgradeGroup as any,
         getIdFromRoom(container.room, CONTROLLER_ID));
@@ -75,6 +73,7 @@ export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent
     }
 
     if (containerActionGroup) {
+      console.log(`Assigning Container to id=${containerActionGroup.id} pos=${JSON.stringify(container.pos)}`);
       containerActionGroup.setContainer(container);
     }
   }

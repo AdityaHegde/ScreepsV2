@@ -8,23 +8,23 @@ export class BuildGroupActions extends JobGroupActions {
   public readonly range: number = 3;
 
   public targetAction(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): number {
+    let returnValue = -12;
+    let powerMulti: number;
     if (targetWrapper.entity instanceof ConstructionSite) {
-      return creepWrapper.entity.build(targetWrapper.entity);
+      returnValue = creepWrapper.entity.build(targetWrapper.entity);
+      powerMulti = BUILD_POWER;
     } else if (targetWrapper.entity instanceof Structure) {
-      return creepWrapper.entity.repair(targetWrapper.entity);
+      returnValue = creepWrapper.entity.repair(targetWrapper.entity);
+      powerMulti = REPAIR_POWER;
     }
-    console.log(JSON.stringify(targetWrapper.entity));
-    return -12;
-  }
-
-  public targetActionCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): boolean {
-    return creepWrapper.entity.store[RESOURCE_ENERGY] <= BUILD_POWER * creepWrapper.power ||
-      !targetWrapper.entity;
+    if (returnValue === OK) {
+      creepWrapper.targetWeight -= Math.min(powerMulti * creepWrapper.power, creepWrapper.entity.store.getUsedCapacity());
+    }
+    return returnValue;
   }
 
   public actionHasCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): void {
-    if (targetWrapper.entity instanceof ConstructionSite &&
-        targetWrapper.entity.progressTotal - targetWrapper.entity.progress <= creepWrapper.power * BUILD_POWER) {
+    if (targetWrapper.entity instanceof ConstructionSite) {
       EventLoop.getEventLoop().addEvent(StructureBuiltEventHandler.getEvent(
         this.room.name, targetWrapper.entity.structureType, targetWrapper.entity.pos.x, targetWrapper.entity.pos.y));
     }

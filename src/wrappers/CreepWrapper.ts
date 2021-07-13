@@ -2,7 +2,6 @@ import {EntityWrapper} from "./EntityWrapper";
 import {ArrayPos} from "../preprocessing/Prefab";
 import {inMemory} from "@memory/inMemory";
 import {JobParams} from "../entity-group/group/job/JobParams";
-import {RoadConnectionEntry, RoadPos} from "@pathfinder/RoadTypes";
 
 export class CreepWrapper extends EntityWrapper<Creep> {
   @inMemory()

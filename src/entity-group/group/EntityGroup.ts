@@ -10,7 +10,7 @@ import {Logger} from "@utils/Logger";
 export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends ColonyBaseClass {
   @inMemory(() => [])
   public entityWrapperIds: Array<string>;
-  public entityWrappers = new Array<EntityWrapperType>();
+  public entityWrappers: Array<EntityWrapperType>;
 
   public readonly EntityWrapperClass: typeof EntityWrapper;
 
@@ -21,9 +21,9 @@ export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends C
   }
 
   public preTick(): void {
-    this.forEachEntityWrapper(() => {
-      // nothing
-    });
+    this.entityWrappers = this.entityWrapperIds.map(entityWrapperId =>
+      Globals.getGlobal(this.EntityWrapperClass, entityWrapperId,
+        () => new this.EntityWrapperClass(entityWrapperId)) as EntityWrapperType);
   }
 
   public tick(): void {
@@ -47,17 +47,10 @@ export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends C
   ): void {
     const deadEntityWrappers = new Array<EntityWrapperType>();
 
-    this.entityWrapperIds.forEach((entityWrapperId, entityWrapperIdx) => {
-      if (this.entityWrappers.length <= entityWrapperIdx) {
-        this.entityWrappers.push(Globals.getGlobal(this.EntityWrapperClass, entityWrapperId,
-          () => new this.EntityWrapperClass(entityWrapperId)) as EntityWrapperType);
-      }
-
-      const entityWrapper = this.entityWrappers[entityWrapperIdx];
+    this.entityWrappers.forEach((entityWrapper) => {
       this.logger.setEntityWrapper(entityWrapper);
 
       if (!entityWrapper.entity) {
-        entityWrapper.destroy();
         deadEntityWrappers.push(entityWrapper);
         deadCallback?.(entityWrapper);
       } else {
@@ -65,7 +58,10 @@ export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends C
       }
     });
 
-    deadEntityWrappers.forEach(deadEntityWrapper => this.removeEntityWrapper(deadEntityWrapper));
+    deadEntityWrappers.forEach((deadEntityWrapper) => {
+      this.removeEntityWrapper(deadEntityWrapper);
+      deadEntityWrapper.destroy();
+    });
   }
 
   public removeEntityWrapper(entityWrapper: EntityWrapperType): void {

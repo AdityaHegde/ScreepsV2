@@ -1,9 +1,4 @@
-import {EntityWrapper} from "./EntityWrapper";
-import {ArrayPos} from "../preprocessing/Prefab";
-import {inMemory} from "@memory/inMemory";
-import {PositionsEntity} from "@utils/rearrangePositions";
-import {initPositionsEntry} from "@utils/initPositionsEntry";
-import {RoadPos} from "@pathfinder/RoadTypes";
+import {PositionsEntityWrapper} from "@wrappers/PositionsEntityWrapper";
 
 export type HarvestableEntityType = (Source | Mineral);
 
@@ -63,23 +58,5 @@ declare global {
 }
 
 export class HarvestableEntityWrapper<HarvestableEntityTypeSelect extends HarvestableEntityType>
-  extends EntityWrapper<HarvestableEntityTypeSelect> implements PositionsEntity {
-
-  @inMemory()
-  public roadPos: RoadPos;
-  @inMemory()
-  public roadEndArrayPos: ArrayPos;
-
-  @inMemory()
-  public positions: Array<ArrayPos>;
-  @inMemory()
-  public positionAssignments: Array<string>;
-  @inMemory()
-  public middleIdx: number;
-
-  public init(roadPos: RoadPos, adjacentArrayPos: ArrayPos, roadEndArrayPos: ArrayPos): void {
-    this.roadPos = roadPos;
-    this.roadEndArrayPos = roadEndArrayPos;
-    initPositionsEntry(this, new Room.Terrain(this.entity.room.name), adjacentArrayPos, this.entity.pos);
-  }
+  extends PositionsEntityWrapper<HarvestableEntityTypeSelect> {
 }

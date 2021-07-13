@@ -19,6 +19,8 @@ export class JobGroupActions {
       return creepWrapper.entity.pickup(sourceWrapper.entity);
     } else if (sourceWrapper.entity instanceof Creep) {
       return sourceWrapper.entity.transfer(creepWrapper.entity, creepWrapper.job[JobResourceIdx]);
+    } else if (sourceWrapper.entity instanceof Structure) {
+      return creepWrapper.entity.withdraw(sourceWrapper.entity, creepWrapper.job[JobResourceIdx]);
     }
     return -12;
   }
@@ -28,7 +30,7 @@ export class JobGroupActions {
   }
 
   public targetActionCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): boolean {
-    return true;
+    return creepWrapper.targetWeight <= 0 || !targetWrapper.entity;
   }
 
   public actionHasCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): void {

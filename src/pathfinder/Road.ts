@@ -111,7 +111,7 @@ export class Road extends BaseClass {
     curPos[1] = (curPos[1] === 0 && direction === 1) ? (this.roadDirections.length - 1) :
       (curPos[1] === this.roadDirections.length - 1 && direction === 0) ? 0 : curPos[1];
     // console.log("getMoveDirection", `${curPos[1]} => ${destRoadPosIdx}`, direction, this.roadDirections.length);
-    return this.roadDirections[curPos[1]][direction];
+    return this.roadDirections[curPos[1]][direction] as DirectionConstant;
   }
 
   public updatePos(pos: RoadPos, destRoadPosIdx: number): void {
@@ -133,7 +133,7 @@ export class Road extends BaseClass {
       }
       // console.log(`${roadDirectionIdx} + ${incrementDirection}(${moveDirection}) :`,
       //   `${startRoadPosIdx} => ${endRoadPosIdx}`, this.roadDirections[roadDirectionIdx]);
-      path.push(this.roadDirections[roadDirectionIdx][moveDirection]);
+      path.push(this.roadDirections[roadDirectionIdx][moveDirection] as DirectionConstant);
       roadDirectionIdx += incrementDirection;
     }
     return path;

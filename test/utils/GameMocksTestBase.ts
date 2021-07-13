@@ -1,7 +1,8 @@
 import {MemoryMockTestBase} from "./MemoryMockTestBase";
 import {TestBase} from "./TestBase";
-import {GameMocks} from "./GameMocks";
-import {Globals} from "../../src/globals/Globals";
+import {GameMocks} from "./game-mocks/GameMocks";
+import {Globals} from "@globals/Globals";
+import {EventLoop} from "../../src/events/EventLoop";
 
 export class GameMocksTestBase extends MemoryMockTestBase {
   public gameMocks: GameMocks;
@@ -15,5 +16,6 @@ export class GameMocksTestBase extends MemoryMockTestBase {
   public setupGameMocksTest(): void {
     this.gameMocks.init();
     Globals.init();
+    EventLoop.getEventLoop().preTick();
   }
 }

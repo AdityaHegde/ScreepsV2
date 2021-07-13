@@ -5,6 +5,11 @@ import {BaseEntityType, EntityWrapper} from "@wrappers/EntityWrapper";
 import {getWrapperById} from "@wrappers/getWrapperById";
 import {findInArray} from "@utils/StatsUtils";
 import inlineDiffs = Mocha.reporters.Base.inlineDiffs;
+import {EventLoop} from "../../events/EventLoop";
+import {StructureBuiltEventHandler} from "../../events/StructureBuiltEventHandler";
+
+export const WeightSizeIdx = 0;
+export const WeightCountIdx = 1;
 
 @MemoryClass("entityPool")
 export class EntityPool extends ColonyBaseClass {
@@ -13,7 +18,7 @@ export class EntityPool extends ColonyBaseClass {
   @inMemory(() => 0)
   public cursor: number;
   @inMemory(() => {return {}})
-  public weights: Record<string, number>;
+  public weights: Record<string, [size: number, count: number]>;
 
   public shouldRotate: boolean;
 
@@ -38,29 +43,31 @@ export class EntityPool extends ColonyBaseClass {
       const entityWrapper = getWrapperById(this.entityWrapperIds[i]);
       if (!entityWrapper.isValid()) {
         this.removeEntityWrapper(entityWrapper);
-      } else if (this.weights[entityWrapper.id] > 0) {
+        entityWrapper.destroy();
+      } else if (this.weights[entityWrapper.id][WeightSizeIdx] > 0) {
         this.freeEntityWrappers.push(entityWrapper);
       }
     }
   }
 
   public addEntityWrapper(entityWrapper: EntityWrapper<BaseEntityType>, initialWeight: number, weightOffset?: number): void {
-    if (this.entityWrapperIds.indexOf(entityWrapper.id) >= 0) {
+    if (entityWrapper.id in this.weights) {
       this.updateCurrentWeight(entityWrapper, weightOffset ?? initialWeight, initialWeight);
       return;
     }
 
     this.entityWrapperIds.push(entityWrapper.id);
-    this.weights[entityWrapper.id] = initialWeight;
-    if (this.weights[entityWrapper.id] > 0) {
+    this.weights[entityWrapper.id] = [initialWeight, 0];
+    if (initialWeight > 0) {
       this.freeEntityWrappers?.push(entityWrapper);
     }
   }
 
   public updateCurrentWeight(entityWrapper: EntityWrapper<BaseEntityType>, curWeightOffset: number, maxWeight: number): void {
-    const wasNotFree = this.weights[entityWrapper.id] === 0;
-    this.weights[entityWrapper.id] = Math.min(
-      Math.max(0, this.weights[entityWrapper.id] + curWeightOffset), maxWeight,
+    if (!(entityWrapper.id in this.weights)) return;
+    const wasNotFree = this.weights[entityWrapper.id][WeightSizeIdx] === 0;
+    this.weights[entityWrapper.id][WeightSizeIdx] = Math.min(
+      Math.max(0, this.weights[entityWrapper.id][WeightSizeIdx] + curWeightOffset), maxWeight,
     );
     if (wasNotFree) {
       this.freeEntityWrappers.push(entityWrapper);
@@ -68,9 +75,13 @@ export class EntityPool extends ColonyBaseClass {
   }
 
   public removeEntityWrapper(entityWrapper: EntityWrapper<BaseEntityType>): void {
+    this.logger.log(`entityPool=${this.id} Removing id=${entityWrapper.id} ` +
+      `weight=${this.weights[entityWrapper.id]?.[WeightSizeIdx]} ` +
+      `claimCount=${this.weights[entityWrapper.id]?.[WeightCountIdx]}`);
     const idx = this.entityWrapperIds.indexOf(entityWrapper.id);
     if (idx === -1) return;
     this.entityWrapperIds.splice(idx, 1);
+    delete this.weights[entityWrapper.id];
 
     if (!this.freeEntityWrappers) return;
     const freeIdx = this.freeEntityWrappers.indexOf(entityWrapper);
@@ -80,7 +91,7 @@ export class EntityPool extends ColonyBaseClass {
 
   public hasFreeEntityWrapper(entityWeight?: number): boolean {
     if (entityWeight) {
-      return this.freeEntityWrappers.find(freeEntityWrapper => this.weights[freeEntityWrapper.id] >= entityWeight) !== undefined;
+      return this.freeEntityWrappers.find(freeEntityWrapper => this.weights[freeEntityWrapper.id][WeightSizeIdx] >= entityWeight) !== undefined;
     } else {
       return this.freeEntityWrappers.length > 0;
     }
@@ -88,17 +99,19 @@ export class EntityPool extends ColonyBaseClass {
 
   public claimTarget(entityWrapper: EntityWrapper<BaseEntityType>, entityWeight: number, fullClaim = false): EntityWrapper<BaseEntityType> {
     const claimedEntityWrapperIdx = fullClaim ?
-      this.freeEntityWrappers.findIndex(freeEntityWrapper => this.weights[freeEntityWrapper.id] >= entityWeight) : 0;
+      this.freeEntityWrappers.findIndex(freeEntityWrapper => this.weights[freeEntityWrapper.id][WeightSizeIdx] >= entityWeight) : 0;
     const claimedEntityWrapper = this.freeEntityWrappers[claimedEntityWrapperIdx];
     let claimedWeight: number;
-    if (this.weights[claimedEntityWrapper.id] >= entityWeight) {
+    if (this.weights[claimedEntityWrapper.id][WeightSizeIdx] >= entityWeight) {
       claimedWeight = entityWeight;
     } else {
-      claimedWeight = entityWeight - this.weights[claimedEntityWrapper.id];
+      claimedWeight = this.weights[claimedEntityWrapper.id][WeightSizeIdx];
     }
-    this.weights[claimedEntityWrapper.id] -= claimedWeight;
+    this.weights[claimedEntityWrapper.id][WeightSizeIdx] -= claimedWeight;
+    this.weights[claimedEntityWrapper.id][WeightCountIdx]++;
+    entityWrapper.targetWeight = claimedWeight;
 
-    if (this.weights[claimedEntityWrapper.id] <= 0) {
+    if (this.weights[claimedEntityWrapper.id][WeightSizeIdx] <= 0) {
       this.freeEntityWrappers.splice(claimedEntityWrapperIdx, 1);
     }
     if (this.shouldRotate) {
@@ -106,5 +119,18 @@ export class EntityPool extends ColonyBaseClass {
     }
 
     return claimedEntityWrapper;
+  }
+
+  public releaseTarget(entityWrapperId: string, returnedWeight: number): boolean {
+    if (!(entityWrapperId in this.weights)) return;
+
+    this.logger.log(`ReleaseTarget id=${entityWrapperId} returnedWeight=${returnedWeight} ` +
+      `weight=${this.weights[entityWrapperId][WeightSizeIdx]} ` +
+      `claimCount=${this.weights[entityWrapperId][WeightCountIdx]}`);
+
+    this.weights[entityWrapperId][WeightSizeIdx] = Math.max(0, this.weights[entityWrapperId][WeightSizeIdx] + returnedWeight);
+    this.weights[entityWrapperId][WeightCountIdx] = Math.max(0, this.weights[entityWrapperId][WeightCountIdx] - 1);
+
+    return this.weights[entityWrapperId][WeightSizeIdx] <= 0 && this.weights[entityWrapperId][WeightCountIdx] <= 0;
   }
 }

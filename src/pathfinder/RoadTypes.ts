@@ -3,7 +3,7 @@ export const RoadPosRoadIdx = 0;
 export const RoadPosRoadPosIdx = 1;
 export const RoadPosDirectionIdx = 2;
 
-export type RoadDirection = [forwards: DirectionConstant, backwards: DirectionConstant];
+export type RoadDirection = [forwards: DirectionConstant | 0, backwards: DirectionConstant | 0];
 export const RoadForwardsDirectIdx = 0;
 export const RoadBackwardsDirectionIdx = 1;
 

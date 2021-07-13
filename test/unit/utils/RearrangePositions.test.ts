@@ -30,10 +30,7 @@ export class RearrangePositionsTest extends GameMocksTestBase {
     original: PositionsEntity, creepNames: Array<string>,
     newCreep: string, expected: PositionsEntity,
   ): void {
-    creepNames.forEach(creepName => {
-      const creepMock = this.gameMocks.getCreep(creepName, new RoomPosition(0, 0, "r"));
-      (creepMock.move as any).returns(OK);
-    });
+    creepNames.forEach(creepName => this.gameMocks.getCreep(creepName, new RoomPosition(0, 0, "r")));
     rearrangePositions(original, newCreep ? CreepWrapper.getEntityWrapper(newCreep) : null);
     should(original).be.eql(expected);
   }

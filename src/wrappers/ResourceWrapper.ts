@@ -32,9 +32,8 @@ export class ResourceWrapper extends EntityWrapper<Resource> {
   }
 
   public updateEntity(entity: Resource): this {
-    this.entity = entity;
-    this.entityId = entity.id;
-    return this;
+    this.entityId = entity?.id;
+    return super.updateEntity(entity);
   }
 
   public findAndUpdateResource(room: Room): boolean {

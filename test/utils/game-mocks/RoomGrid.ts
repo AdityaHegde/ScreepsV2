@@ -1,9 +1,8 @@
-import {DIRECTION_TO_OFFSET} from "../../src/pathfinder/PathUtils";
+import {DIRECTION_TO_OFFSET} from "@pathfinder/PathUtils";
 
-export class CreepMovementMocks {
+export class RoomGrid {
   private readonly maxX: number;
   private readonly maxY: number;
-  private readonly creeps = new Array<Creep>();
 
   public readonly grid: Record<number, Record<number, string>> = {};
 
@@ -18,23 +17,11 @@ export class CreepMovementMocks {
     }
   }
 
-  public createCreep(name: string, pos: RoomPosition): Creep {
-    const creep: any = {
-      id: name,
-      name, pos, fatigue: 0,
-    }
-    creep.move = (direction: DirectionConstant) => this.move(creep, direction);
-    this.grid[pos.x][pos.y] = name;
-
-    return creep as Creep;
-  }
-
-  private move(creep: Creep, direction: DirectionConstant) {
+  public move(creep: Creep, direction: DirectionConstant) {
     const offsets = DIRECTION_TO_OFFSET[direction];
     const newX = creep.pos.x + offsets[0];
     const newY = creep.pos.y + offsets[1];
 
-    // if (this.grid[newX]?.[newY]) return OK; // Official APIs return OK even if the terrain is not path-able
     if (newX < 0 || newX > this.maxX || newY < 0 || newY > this.maxY) return ERR_INVALID_ARGS;
 
     this.grid[newX][newY] = creep.name;

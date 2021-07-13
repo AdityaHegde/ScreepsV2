@@ -49,8 +49,7 @@ export class PathNavigator {
       }
 
       movedCreepWrapper.currentMoveDirection = undefined;
-      movedCreepWrapper.path.shift();
-
+      movedCreepWrapper.path?.shift();
     });
     this.pathFinderData.preTick();
   }
@@ -60,6 +59,8 @@ export class PathNavigator {
 
     if (!creepWrapper.path) {
       creepWrapper.path = this.getPath(creepWrapper, pos, shouldMoveIntoTarget);
+    } else if (creepWrapper.path.length === 0) {
+      return;
     }
 
     creepWrapper.currentMoveDirection = creepWrapper.path[0];
@@ -96,9 +97,10 @@ export class PathNavigator {
     });
 
     this.pathFinderData.queuedCreepWrappers.forEach((queuedCreepWrapper) => {
+      if (!queuedCreepWrapper.entity) return;
       queuedCreepWrapper.lastPos = [queuedCreepWrapper.entity.pos.x, queuedCreepWrapper.entity.pos.y];
       this.logger.setRoom(queuedCreepWrapper.entity.room).setEntityWrapper(queuedCreepWrapper)
-        .log(`Moving in direction=${queuedCreepWrapper.currentMoveDirection} distance=${queuedCreepWrapper.path.length} ` +
+        .log(`Moving in direction=${queuedCreepWrapper.currentMoveDirection} distance=${queuedCreepWrapper.path?.length} ` +
           `roomPosition=${queuedCreepWrapper.entity.pos.x},${queuedCreepWrapper.entity.pos.y}`);
       if (queuedCreepWrapper.entity.move(queuedCreepWrapper.currentMoveDirection) === OK) {
         this.pathFinderData.movedCreepWrapperIds.push(queuedCreepWrapper.id);

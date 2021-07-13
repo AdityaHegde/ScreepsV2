@@ -17,12 +17,9 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
   public entity: EntityType;
 
   @inMemory()
-  public target: string;
-  public targetEntity: BaseEntityType;
-  @inMemory()
   public weight: number;
   @inMemory()
-  public currentWeight: number;
+  public targetWeight: number;
 
   @inMemory()
   public task: number;
@@ -34,11 +31,7 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
 
   public constructor(id: string) {
     super(id);
-    this.entity = this.getEntityById(id);
-    if (this.entity) {
-      this.arrayPos = [this.entity.pos.x, this.entity.pos.y];
-      this.roomPos = this.entity.pos;
-    }
+    this.updateEntity(this.getEntityById(id));
   }
 
   public isValid(): boolean {
@@ -47,6 +40,10 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
 
   public updateEntity(entity: EntityType): this {
     this.entity = entity;
+    if (this.entity) {
+      this.arrayPos = [this.entity.pos.x, this.entity.pos.y];
+      this.roomPos = this.entity.pos;
+    }
     return this;
   }
 

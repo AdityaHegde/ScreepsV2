@@ -41,9 +41,8 @@ export class JobNetwork extends ColonyBaseClass {
   }
 
   public claimJob(creepWrapper: CreepWrapper, sourceWeight: number, targetWeight: number): JobParams {
-    const sourceEntityWrapper = this.sourcesEntityPool.claimTarget(creepWrapper, sourceWeight);
-    const targetEntityWrapper = this.targetsEntityPool.claimTarget(creepWrapper,
-      targetWeight * this.targetWeightMultiplier);
+    const sourceEntityWrapper = this.sourcesEntityPool.claimTarget(creepWrapper, sourceWeight, true);
+    const targetEntityWrapper = this.targetsEntityPool.claimTarget(creepWrapper, targetWeight);
     return [
       this.resource,
       sourceEntityWrapper.id, this.sourcesEntityPoolId,

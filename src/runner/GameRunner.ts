@@ -29,12 +29,9 @@ export class GameRunner {
       }
     });
 
-    this.logger.log(`pre tick=${Game.time}`);
     roomRunners.forEach(roomRunner => roomRunner.preTick());
     this.eventLoop.preTick();
-    this.logger.log(`tick=${Game.time}`);
     roomRunners.forEach(roomRunner => roomRunner.tick());
-    this.logger.log(`post tick=${Game.time}`);
     roomRunners.forEach(roomRunner => roomRunner.postTick());
     this.eventLoop.postTick();
   }

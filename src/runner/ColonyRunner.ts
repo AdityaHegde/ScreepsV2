@@ -92,7 +92,8 @@ export class ColonyRunner extends ColonyBaseClass {
       if (spawnEntityWrapper.entity.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return;
       depositPool.updateCurrentWeight(spawnEntityWrapper, -1,
         spawnEntityWrapper.entity.store.getCapacity(RESOURCE_ENERGY));
-      this.logger.log(`spawnId=${spawnId} energy=${spawnEntityWrapper.entity.store[RESOURCE_ENERGY]} weight=${depositPool.weights[spawnId]}`);
+      this.logger.log(`spawnId=${spawnId} energy=${spawnEntityWrapper.entity.store[RESOURCE_ENERGY]} ` +
+        `weight=${depositPool.weights[spawnId].toString()}`);
     });
   }
 }
