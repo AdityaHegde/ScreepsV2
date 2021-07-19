@@ -47,6 +47,8 @@ export class EntityGroup<EntityWrapperType extends EntityWrapper<any>> extends C
   ): void {
     const deadEntityWrappers = new Array<EntityWrapperType>();
 
+    this.logger.setRoom(this.room);
+
     this.entityWrappers.forEach((entityWrapper) => {
       this.logger.setEntityWrapper(entityWrapper);
 

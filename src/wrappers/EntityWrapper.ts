@@ -3,6 +3,8 @@ import {MemoryClass} from "@memory/MemoryClass";
 import {inMemory} from "@memory/inMemory";
 import {Globals} from "@globals/Globals";
 import {ArrayPos} from "../preprocessing/Prefab";
+import {CreepWrapper} from "@wrappers/CreepWrapper";
+import {JobResourceIdx} from "../entity-group/group/job/JobParams";
 
 export interface BaseEntityType {
   id: string;
@@ -47,7 +49,15 @@ export class EntityWrapper<EntityType extends BaseEntityType> extends BaseClass 
     return this;
   }
 
-  public static getEntityWrapper<EntityWrapperType extends EntityWrapper<any>>(id: string): EntityWrapperType {
+  public jobSource(creepWrapper: CreepWrapper): void {
+    creepWrapper.entity.withdraw(this.entity as any, creepWrapper.job[JobResourceIdx]);
+  }
+
+  public jobTarget(creepWrapper: CreepWrapper): void {
+    creepWrapper.entity.transfer(this.entity as any, creepWrapper.job[JobResourceIdx]);
+  }
+
+  public static getEntityWrapper<EntityWrapperType extends EntityWrapper<BaseEntityType>>(id: string): EntityWrapperType {
     return Globals.getGlobal<EntityWrapperType>(this, id, (() => new this(id)) as any);
   }
 

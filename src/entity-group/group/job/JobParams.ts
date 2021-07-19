@@ -1,10 +1,12 @@
 export type JobParams = [
   resourceType: ResourceConstant,
-  sourceId: string, sourceEntityPoolId: string,
-  targetId: string, targetEntityPoolId: string,
+  sourceType: number, sourceId: string, sourceEntityPoolId: string,
+  targetType: number, targetId: string, targetEntityPoolId: string,
 ];
 export const JobResourceIdx = 0;
-export const JobSourceIdIdx = 1;
-export const JobSourceEntityPoolIdx = 2;
-export const JobTargetIdIdx = 3;
-export const JobTargetEntityPoolIdx = 4;
+export const JobSourceTypeIdx = 1
+export const JobSourceIdIdx = 2;
+export const JobSourceEntityPoolIdx = 3;
+export const JobTargetTypeIdx = 4;
+export const JobTargetIdIdx = 5;
+export const JobTargetEntityPoolIdx = 6;

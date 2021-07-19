@@ -1,3 +1,7 @@
+import {PathNavigator} from "@pathfinder/PathNavigator";
+import {CreepWrapper} from "@wrappers/CreepWrapper";
+import {ArrayPos} from "../preprocessing/Prefab";
+
 declare const _: any;
 
 /**
@@ -74,12 +78,28 @@ const STATE_DEST_X = 4;
 const STATE_DEST_Y = 5;
 const STATE_DEST_ROOMNAME = 6;
 
-export class Traveler {
+export class Traveler extends PathNavigator {
 
   private static structureMatrixCache: {[roomName: string]: CostMatrix} = {};
   private static creepMatrixCache: {[roomName: string]: CostMatrix} = {};
   private static creepMatrixTick: {[roomName: string]: number} = {};
   private static structureMatrixTick: {[roomName: string]: number} = {};
+
+  public preTick(): void {
+    // dummy
+  }
+
+  public move(creepWrapper: CreepWrapper, pos: ArrayPos): void {
+    Traveler.travelTo(creepWrapper.entity, new RoomPosition(pos[0], pos[1], ""));
+  }
+
+  public postTick(): void {
+    // dummy
+  }
+
+  public moveOutOfNetwork(): void {
+    // dummy
+  }
 
   /**
    * move creep to destination

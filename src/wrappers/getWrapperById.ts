@@ -5,7 +5,10 @@ import {HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
 import {ControllerWrapper} from "@wrappers/ControllerWrapper";
 import {ResourceWrapper} from "@wrappers/ResourceWrapper";
 
-const ResourceWrapperRegex = /\d*-\d*/;
+(Creep.prototype as any).WRAPPER = CreepWrapper;
+(Source.prototype as any).WRAPPER = HarvestableEntityWrapper;
+(Mineral.prototype as any).WRAPPER = HarvestableEntityWrapper;
+(StructureController.prototype as any).WRAPPER = ControllerWrapper;
 
 export function getWrapperById(id: string): EntityWrapper<BaseEntityType> {
   const fromCache = Globals.getGlobal<EntityWrapper<BaseEntityType>>(EntityWrapper, id);
@@ -14,13 +17,9 @@ export function getWrapperById(id: string): EntityWrapper<BaseEntityType> {
   const entity = Game.getObjectById(id);
   let EntityWrapperClass: typeof EntityWrapper = EntityWrapper;
 
-  if (entity instanceof Creep) {
-    EntityWrapperClass = CreepWrapper as typeof EntityWrapper;
-  } else if ((entity instanceof Source) || (entity instanceof Mineral)) {
-    EntityWrapperClass = HarvestableEntityWrapper as typeof EntityWrapper;
-  } else if (entity instanceof StructureController) {
-    EntityWrapperClass = ControllerWrapper as typeof EntityWrapper;
-  } else if (ResourceWrapperRegex.exec(id)) {
+  if ((entity as any).WRAPPER) {
+    EntityWrapperClass = (entity as any).WRAPPER as typeof EntityWrapper;
+  } else if (id.startsWith(ResourceWrapper.ID_PREFIX)) {
     EntityWrapperClass = ResourceWrapper as typeof EntityWrapper;
   }
 

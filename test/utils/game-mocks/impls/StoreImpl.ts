@@ -19,12 +19,14 @@ export class StoreImpl {
     return this.energy;
   }
 
-  public transfer(store: StoreImpl): void {
+  public transfer(store: StoreImpl, amount: number): void {
+    amount = Math.min(amount, this.energy);
+
     const freeCapacity = store.getFreeCapacity();
 
-    if (this.energy < freeCapacity) {
-      store.energy += this.energy;
-      this.energy = 0;
+    if (amount < freeCapacity) {
+      store.energy += amount;
+      this.energy -= amount;
     } else {
       store.energy = store.capacity;
       this.energy -= freeCapacity;

@@ -1,12 +1,15 @@
 import {CreepWrapper} from "@wrappers/CreepWrapper";
 import {BaseEntityType, EntityWrapper} from "@wrappers/EntityWrapper";
 import {JobResourceIdx} from "./JobParams";
+import {Logger} from "@utils/Logger";
 
 export class JobGroupActions {
   public readonly targetWeightMultiplier: number;
   public readonly room: Room;
 
   public readonly range: number = 1;
+
+  protected logger = new Logger("JobGroupActions");
 
   public constructor(room: Room, targetWeightMultiplier: number) {
     this.room = room;
@@ -30,7 +33,7 @@ export class JobGroupActions {
   }
 
   public targetActionCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): boolean {
-    return creepWrapper.targetWeight <= 0 || !targetWrapper.entity;
+    return creepWrapper.targetWeight <= 0 || creepWrapper.weight <= 0 || !targetWrapper.entity;
   }
 
   public actionHasCompleted(creepWrapper: CreepWrapper, targetWrapper: EntityWrapper<BaseEntityType>): void {

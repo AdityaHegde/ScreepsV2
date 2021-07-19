@@ -6,6 +6,8 @@ import {CreepImpl} from "./impls/CreepImpl";
 import {StructureImpl, StructureImplOpts} from "./impls/StructureImpl";
 import {ConstructionSiteImpl, ConstructionSiteImplOpts} from "./impls/ConstructionSiteImpl";
 import {BaseEntityType} from "@wrappers/EntityWrapper";
+import {SourceImpl} from "./impls/SourceImpl";
+import {ControllerImpl} from "./impls/ControllerImpl";
 
 export class GameMocks {
   private readonly sandbox: SinonSandbox;
@@ -26,19 +28,29 @@ export class GameMocks {
     };
     (global as any).Creep = CreepImpl;
     (global as any).Structure = StructureImpl;
-    (global as any).ConstructionSite = ConstructionSiteImpl
+    (global as any).ConstructionSite = ConstructionSiteImpl;
+    (global as any).Source = SourceImpl;
+    (global as any).StructureController = ControllerImpl;
   }
 
-  public getCreep(name: string, pos: RoomPosition): Creep {
+  public getCreep(name: string, pos: RoomPosition): CreepImpl {
     return this.mockObject(new CreepImpl(name, pos, this.gameGlobals));
   }
 
-  public getConstructionSite(id: string, pos: RoomPosition, opts: ConstructionSiteImplOpts): ConstructionSite {
+  public getConstructionSite(id: string, pos: RoomPosition, opts: ConstructionSiteImplOpts): ConstructionSiteImpl {
     return this.mockObject(new ConstructionSiteImpl(id, pos, this.gameGlobals, opts));
   }
 
-  public getStructure(id: string, pos: RoomPosition, opts: StructureImplOpts): Structure {
+  public getStructure(id: string, pos: RoomPosition, opts: StructureImplOpts): StructureImpl {
     return this.mockObject(new StructureImpl(id, pos, this.gameGlobals, opts));
+  }
+
+  public getSource(id: string, pos: RoomPosition): SourceImpl {
+    return this.mockObject(new SourceImpl(id, pos));
+  }
+
+  public getController(id: string, pos: RoomPosition): ControllerImpl {
+    return this.mockObject(new ControllerImpl(id, pos));
   }
 
   public destroy(entity: BaseEntityType): void {

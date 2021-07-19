@@ -14,6 +14,8 @@ export class ResourceWrapper extends EntityWrapper<Resource> {
   @inMemory()
   public hasExpired: boolean;
 
+  public static ID_PREFIX = "__RES_";
+
   public constructor(id: string) {
     super(id);
     if (!this.entity && this.arrayPos) {
@@ -51,7 +53,7 @@ export class ResourceWrapper extends EntityWrapper<Resource> {
   }
 
   public static getId(room: Room, x: number, y: number, type: string): string {
-    return `${room.name}-${x}-${y}-${type}`;
+    return `${ResourceWrapper.ID_PREFIX}${room.name}-${x}-${y}-${type}`;
   }
 
   protected getEntityById(): Resource {

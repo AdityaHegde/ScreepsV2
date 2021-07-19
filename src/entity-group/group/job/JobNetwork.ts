@@ -29,9 +29,7 @@ export class JobNetwork extends ColonyBaseClass {
   }
 
   public preTick(): void {
-    // this.sourcesEntityPool = Globals.getGlobal<EntityPool>(EntityPool as any, this.sourcesEntityPoolId);
     this.sourcesEntityPool.preTick();
-    // this.targetsEntityPool = Globals.getGlobal<EntityPool>(EntityPool as any, this.targetsEntityPoolId);
     this.targetsEntityPool.preTick();
   }
 
@@ -45,8 +43,8 @@ export class JobNetwork extends ColonyBaseClass {
     const targetEntityWrapper = this.targetsEntityPool.claimTarget(creepWrapper, targetWeight);
     return [
       this.resource,
-      sourceEntityWrapper.id, this.sourcesEntityPoolId,
-      targetEntityWrapper.id, this.targetsEntityPoolId,
+      0, sourceEntityWrapper.id, this.sourcesEntityPoolId,
+      0, targetEntityWrapper.id, this.targetsEntityPoolId,
     ];
   }
 }

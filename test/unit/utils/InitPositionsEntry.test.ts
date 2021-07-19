@@ -4,8 +4,9 @@ import {ArrayPos} from "../../../src/preprocessing/Prefab";
 import should from "should";
 import {DataProviderData} from "../../utils/TestBase";
 import {initPositionsEntry} from "@utils/initPositionsEntry";
+import {PositionsEntityWrapper} from "@wrappers/PositionsEntityWrapper";
 
-type PositionsData = [roadEndArrayPos: ArrayPos, entityPos: RoomPosition, expected: PositionsEntity];
+type PositionsData = [roadEndArrayPos: ArrayPos, entityPos: RoomPosition, expected: any];
 
 @GameMocksTestBase.Suite
 export class InitPositionsEntryTest extends GameMocksTestBase {
@@ -23,11 +24,14 @@ export class InitPositionsEntryTest extends GameMocksTestBase {
     roadEndArrayPos: ArrayPos, entityPos: RoomPosition,
     expected: PositionsEntity,
   ): void {
-    const original: PositionsEntity = {
-      positions: [], positionAssignments: [], middleIdx: -1, roadPos: null,
-    };
-    initPositionsEntry(original, new Room.Terrain(""), roadEndArrayPos, entityPos);
-    should(original).be.eql(expected);
+    this.gameMocks.getStructure("struct", entityPos, {structureType: "controller"}).room = new Room("r");
+    const positionsEntityWrapper = new PositionsEntityWrapper("struct");
+    positionsEntityWrapper.init([0, 0], roadEndArrayPos, [0, 0]);
+    should({
+      positions: positionsEntityWrapper.positions,
+      positionAssignments: positionsEntityWrapper.positionAssignments,
+      middleIdx: positionsEntityWrapper.middleIdx,
+    }).be.eql(expected);
   }
 
   private static getInitPositionsDataForAdjacentPos(): DataProviderData<PositionsData> {
@@ -36,22 +40,22 @@ export class InitPositionsEntryTest extends GameMocksTestBase {
       subData: [{
         args: [
           [2, 2], new RoomPosition(1, 1, ""),
-          {positions: [[2, 1], [2, 2], [1, 2]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+          {positions: [[2, 1], [2, 2], [1, 2]], positionAssignments: ["", "", ""], middleIdx: 1},
         ],
       }, {
         args: [
           [2, 2], new RoomPosition(1, 2, ""),
-          {positions: [[2, 1], [2, 2], [2, 3]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+          {positions: [[2, 1], [2, 2], [2, 3]], positionAssignments: ["", "", ""], middleIdx: 1},
         ],
       }, {
         args: [
           [2, 2], new RoomPosition(3, 3, ""),
-          {positions: [[2, 3], [2, 2], [3, 2]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+          {positions: [[2, 3], [2, 2], [3, 2]], positionAssignments: ["", "", ""], middleIdx: 1},
         ],
       }, {
         args: [
           [2, 2], new RoomPosition(2, 3, ""),
-          {positions: [[1, 2], [2, 2], [3, 2]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+          {positions: [[1, 2], [2, 2], [3, 2]], positionAssignments: ["", "", ""], middleIdx: 1},
         ],
       }],
     }
@@ -65,7 +69,7 @@ export class InitPositionsEntryTest extends GameMocksTestBase {
           return {
             args: [
               [5, 5], new RoomPosition(entityPos[0], entityPos[1], ""),
-              {positions: [[5, 4], [5, 5], [4, 5]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+              {positions: [[5, 4], [5, 5], [4, 5]], positionAssignments: ["", "", ""], middleIdx: 1},
             ],
           } as DataProviderData<PositionsData>;
         }),
@@ -73,7 +77,7 @@ export class InitPositionsEntryTest extends GameMocksTestBase {
           return {
             args: [
               [5, 5], new RoomPosition(entityPos[0], entityPos[1], ""),
-              {positions: [[5, 6], [5, 5], [6, 5]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+              {positions: [[5, 6], [5, 5], [6, 5]], positionAssignments: ["", "", ""], middleIdx: 1},
             ],
           } as DataProviderData<PositionsData>;
         }),
@@ -81,7 +85,7 @@ export class InitPositionsEntryTest extends GameMocksTestBase {
           return {
             args: [
               [5, 5], new RoomPosition(entityPos[0], entityPos[1], ""),
-              {positions: [[5, 6], [5, 5], [5, 4]], positionAssignments: ["", "", ""], middleIdx: 1, roadPos: null},
+              {positions: [[5, 6], [5, 5], [5, 4]], positionAssignments: ["", "", ""], middleIdx: 1},
             ],
           } as DataProviderData<PositionsData>;
         }),

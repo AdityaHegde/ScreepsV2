@@ -1,6 +1,9 @@
 import {GameGlobals} from "../GameGlobals";
 import {StoreImpl} from "./StoreImpl";
 import {ConstructionSiteImpl} from "./ConstructionSiteImpl";
+import {isNearToRoomPosition} from "@pathfinder/PathUtils";
+import {SourceImpl} from "./SourceImpl";
+import {ControllerImpl} from "./ControllerImpl";
 
 export interface CreepImplOpts {
   workCount?: number;
@@ -30,9 +33,9 @@ export class CreepImpl implements Creep {
 
   public readonly gameGlobals: GameGlobals;
 
-  private readonly workCount: number;
-  private readonly carryCount: number;
-  private readonly storeImpl: StoreImpl;
+  public readonly workCount: number;
+  public readonly carryCount: number;
+  public readonly storeImpl: StoreImpl;
 
   public constructor(
     name: string, pos: RoomPosition, gameGlobals: GameGlobals,
@@ -57,9 +60,11 @@ export class CreepImpl implements Creep {
   }
 
   public build(target: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH {
+    if (!isNearToRoomPosition(this.pos, target.pos, 3)) return ERR_NOT_IN_RANGE;
     if (target instanceof ConstructionSiteImpl) {
       this.gameGlobals.addAction(() => {
-        this.storeImpl.addEnergy(-target.build(this.workCount * BUILD_POWER));
+        const amount = Math.min(this.workCount * BUILD_POWER, this.storeImpl.energy);
+        this.storeImpl.addEnergy(-target.build(amount));
       });
     }
     return OK;
@@ -90,6 +95,12 @@ export class CreepImpl implements Creep {
   }
 
   public harvest(target: Source | Mineral | Deposit): CreepActionReturnCode | ERR_NOT_FOUND | ERR_NOT_ENOUGH_RESOURCES {
+    if (!isNearToRoomPosition(this.pos, target.pos, 1)) return ERR_NOT_IN_RANGE;
+    if (target instanceof SourceImpl) {
+      this.gameGlobals.addAction(() => {
+        target.harvest(this);
+      });
+    }
     return OK;
   }
 
@@ -162,19 +173,27 @@ export class CreepImpl implements Creep {
   }
 
   public transfer(target: AnyCreep | Structure, resourceType: ResourceConstant, amount?: number): ScreepsReturnCode {
+    if (!isNearToRoomPosition(this.pos, target.pos, 1)) return ERR_NOT_IN_RANGE;
     this.gameGlobals.addAction(() => {
-      this.storeImpl.transfer((target as any).store as StoreImpl);
+      this.storeImpl.transfer((target as any).store as StoreImpl, amount);
     });
     return OK;
   }
 
   public upgradeController(target: StructureController): ScreepsReturnCode {
+    if (!isNearToRoomPosition(this.pos, target.pos, 3)) return ERR_NOT_IN_RANGE;
+    if (target instanceof ControllerImpl) {
+      this.gameGlobals.addAction(() => {
+        target.upgrade(this);
+      });
+    }
     return OK;
   }
 
   public withdraw(target: Structure | Tombstone | Ruin, resourceType: ResourceConstant, amount?: number): ScreepsReturnCode {
+    if (!isNearToRoomPosition(this.pos, target.pos, 1)) return ERR_NOT_IN_RANGE;
     this.gameGlobals.addAction(() => {
-      ((target as any).store as StoreImpl).transfer(this.storeImpl);
+      ((target as any).store as StoreImpl).transfer(this.storeImpl, amount);
     });
     return OK;
   }

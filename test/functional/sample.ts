@@ -34,9 +34,6 @@ import {execSync} from "child_process";
     await server.tick();
     const newNotifications = (await bot.newNotifications)
     newNotifications.forEach(({ message }) => console.log(`[notification] ${message.join ? message.join(" ") : message}`));
-    if (newNotifications.length > 0) {
-      break;
-    }
   }
   const memory: Record<string, any> = JSON.parse(await bot.memory);
   ["entity", "entityPool", "groups"].forEach(key => console.log(key, JSON.stringify(memory[key])));

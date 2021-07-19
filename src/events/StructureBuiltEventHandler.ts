@@ -21,7 +21,7 @@ export interface StructureBuiltEvent extends EventEntryBase {
 
 const StructureToTargetMap = {
   [STRUCTURE_SPAWN]: DEPOSIT_ID,
-  [STRUCTURE_CONTAINER]: SOURCE_ID,
+  [STRUCTURE_EXTENSION]: DEPOSIT_ID,
 };
 
 export class StructureBuiltEventHandler extends EventHandler<StructureBuiltEvent> {

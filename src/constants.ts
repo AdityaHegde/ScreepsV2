@@ -30,6 +30,3 @@ export const RESOURCE_FIND_THRESHOLD = 10;
 
 // Memory constants
 export const GROUPS_MEMORY_NAME = "groups";
-
-// Switch constants
-export const USE_CUSTOM_PATHFINDER = false;

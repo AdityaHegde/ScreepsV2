@@ -4,6 +4,8 @@ import {PathFinderData} from "./PathFinderData";
 import {PathBuilder} from "./PathBuilder";
 import {PathNavigator} from "./PathNavigator";
 import {getIdFromRoom} from "../utils/getIdFromRoom";
+import {Traveler} from "@pathfinder/Traveler";
+import {DummyPathBuilder} from "@pathfinder/DummyPathBuilder";
 
 @MemoryClass("pathFinder")
 export class ColonyPathFinder extends ColonyBaseClass {
@@ -35,6 +37,14 @@ export class ColonyPathFinder extends ColonyBaseClass {
     const pathFinderData = new PathFinderData(id, room);
     const pathBuilder = new PathBuilder(pathFinderData);
     const pathNavigator = new PathNavigator(pathFinderData);
+    return new ColonyPathFinder(id, room, pathFinderData, pathBuilder, pathNavigator);
+  }
+
+  public static getTravellerColonyPathFinder(room: Room): ColonyPathFinder {
+    const id = getIdFromRoom(room, "path");
+    const pathFinderData = new PathFinderData(id, room);
+    const pathBuilder = new DummyPathBuilder(pathFinderData);
+    const pathNavigator = new Traveler(pathFinderData);
     return new ColonyPathFinder(id, room, pathFinderData, pathBuilder, pathNavigator);
   }
 }

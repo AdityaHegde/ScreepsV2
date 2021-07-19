@@ -1,5 +1,5 @@
 import {TestHookData, TestParams} from "./TestHookData";
-import {getClassName} from "../../src/utils/getClassName";
+import {getClassName} from "@utils/getClassName";
 import sinon from "sinon";
 
 export interface DataProviderData<Type = any> {

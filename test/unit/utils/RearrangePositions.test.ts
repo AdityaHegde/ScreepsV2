@@ -3,6 +3,7 @@ import {PositionsEntity, rearrangePositions} from "../../../src/utils/rearrangeP
 import should from "should";
 import {CreepWrapper} from "../../../src/wrappers/CreepWrapper";
 import {GameMocksTestBase} from "../../utils/GameMocksTestBase";
+import {PositionsEntityWrapper} from "@wrappers/PositionsEntityWrapper";
 
 type RearrangePositionsData = [
   original: PositionsEntity, creeps: Array<string>,
@@ -30,6 +31,8 @@ export class RearrangePositionsTest extends GameMocksTestBase {
     original: PositionsEntity, creepNames: Array<string>,
     newCreep: string, expected: PositionsEntity,
   ): void {
+    const positionEntityWrapper = new PositionsEntityWrapper("");
+    Object.keys(original).forEach(key => positionEntityWrapper[key] = original[key]);
     creepNames.forEach(creepName => this.gameMocks.getCreep(creepName, new RoomPosition(0, 0, "r")));
     rearrangePositions(original, newCreep ? CreepWrapper.getEntityWrapper(newCreep) : null);
     should(original).be.eql(expected);

@@ -8,6 +8,7 @@ export class HaulGroupActions extends JobGroupActions {
     const returnValue = creepWrapper.entity.transfer(targetWrapper.entity as any, creepWrapper.job[JobResourceIdx]);
     if (returnValue === OK) {
       creepWrapper.targetWeight = 0;
+      creepWrapper.weight = 0;
     }
     return returnValue;
   }

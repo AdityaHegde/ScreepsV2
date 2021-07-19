@@ -108,29 +108,6 @@ export class PathNavigator {
     });
   }
 
-  public acquireRoadPosFromRoomPosition(pos: RoomPosition): RoadPos {
-    return this.acquireRoadPosFromXY(pos.x, pos.y);
-  }
-
-  public acquireRoadPosFromArrayPos(pos: ArrayPos): RoadPos {
-    return this.acquireRoadPosFromXY(pos[0], pos[1]);
-  }
-
-  public acquireRoadPosFromXY(x: number, y: number): RoadPos {
-    const key = getKeyFromArrayXY(x, y);
-    if (this.pathFinderData.roadPosMap[key]?.length) {
-      return [...this.pathFinderData.roadPosMap[key][0]];
-    } else if (this.pathFinderData.posToRoadMap[key]?.length) {
-      return [...this.pathFinderData.posToRoadMap[key][0]];
-    }
-    for (const directionOffset of DIRECTION_OFFSETS) {
-      const dirKey = getKeyFromArrayXY(x + directionOffset[0], y + directionOffset[1]);
-      if (dirKey in this.pathFinderData.roadPosMap) {
-        return [...this.pathFinderData.roadPosMap[dirKey][0]];
-      }
-    }
-  }
-
   private getPath(creepWrapper: CreepWrapper, targetArrayPos: ArrayPos, shouldMoveIntoTarget = false): Array<DirectionConstant> {
     const path = new Array<DirectionConstant>();
 
@@ -179,6 +156,29 @@ export class PathNavigator {
     }
 
     return path;
+  }
+
+  private acquireRoadPosFromRoomPosition(pos: RoomPosition): RoadPos {
+    return this.acquireRoadPosFromXY(pos.x, pos.y);
+  }
+
+  private acquireRoadPosFromArrayPos(pos: ArrayPos): RoadPos {
+    return this.acquireRoadPosFromXY(pos[0], pos[1]);
+  }
+
+  private acquireRoadPosFromXY(x: number, y: number): RoadPos {
+    const key = getKeyFromArrayXY(x, y);
+    if (this.pathFinderData.roadPosMap[key]?.length) {
+      return [...this.pathFinderData.roadPosMap[key][0]];
+    } else if (this.pathFinderData.posToRoadMap[key]?.length) {
+      return [...this.pathFinderData.posToRoadMap[key][0]];
+    }
+    for (const directionOffset of DIRECTION_OFFSETS) {
+      const dirKey = getKeyFromArrayXY(x + directionOffset[0], y + directionOffset[1]);
+      if (dirKey in this.pathFinderData.roadPosMap) {
+        return [...this.pathFinderData.roadPosMap[dirKey][0]];
+      }
+    }
   }
 
   private acquireThroughRoadPos(roadPos: RoadPos, destRoadPos: RoadPos): RoadConnectionEntry {

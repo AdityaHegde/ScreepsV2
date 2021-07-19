@@ -7,6 +7,7 @@ import {findInArray} from "@utils/StatsUtils";
 import inlineDiffs = Mocha.reporters.Base.inlineDiffs;
 import {EventLoop} from "../../events/EventLoop";
 import {StructureBuiltEventHandler} from "../../events/StructureBuiltEventHandler";
+import {Logger} from "@utils/Logger";
 
 export const WeightSizeIdx = 0;
 export const WeightCountIdx = 1;
@@ -24,6 +25,8 @@ export class EntityPool extends ColonyBaseClass {
 
   public freeEntityWrappers: Array<EntityWrapper<BaseEntityType>>;
   public preTickRun = false;
+
+  protected logger = new Logger("EntityPool");
 
   public constructor(id: string, room: Room, shouldRotate = false) {
     super(id, room);

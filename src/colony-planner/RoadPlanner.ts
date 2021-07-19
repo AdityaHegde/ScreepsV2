@@ -29,10 +29,10 @@ export class RoadPlanner extends Planner {
       colonyPlanner.rclPrefabs[0].unshift(containerBuildingPrefab);
     }
 
-    const [roadPos, adjacentArrayPos, roadEndArrayPos] = this.addPathToTarget(colonyPlanner, roadBuildingPlan, containerBuildingPrefab,
+    const [adjacentArrayPos, roadEndArrayPos] = this.addPathToTarget(colonyPlanner, roadBuildingPlan, containerBuildingPrefab,
       new RoomPosition(colonyPlanner.center[0], colonyPlanner.center[1], colonyPlanner.room.name), targetEntity.entity.pos, this.range);
 
-    targetEntity.init(roadPos, adjacentArrayPos, roadEndArrayPos);
+    targetEntity.init(adjacentArrayPos, roadEndArrayPos);
   }
 
   public static getSourceRoadPlans(colonyPlanner: ColonyPlanner): Array<RoadPlanner> {
@@ -47,7 +47,7 @@ export class RoadPlanner extends Planner {
     colonyPlanner: ColonyPlanner,
     roadBuildingPlan: BuildingPlan, containerBuildingPlan: BuildingPlan,
     origin: RoomPosition, target: RoomPosition, range: number,
-  ): [RoadPos, ArrayPos, ArrayPos] {
+  ): [ArrayPos, ArrayPos] {
     const pathFinderPath = PathFinder.search(origin, {pos: target, range}, {
       roomCallback: () => {
         return colonyPlanner.costMatrix;
@@ -67,8 +67,8 @@ export class RoadPlanner extends Planner {
       pathFinderPath.path[pathFinderPath.path.length - 1].y,
     ]);
 
-    const roadPos = colonyPlanner.pathFinder.pathBuilder.addRoad(rawRoad);
+    colonyPlanner.pathFinder.pathBuilder.addRoad(rawRoad);
 
-    return [roadPos, lastPos, rawRoad[rawRoad.length - 1]];
+    return [lastPos, rawRoad[rawRoad.length - 1]];
   }
 }

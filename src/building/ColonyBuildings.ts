@@ -40,7 +40,8 @@ export class ColonyBuildings extends ColonyBaseClass {
   public prevLevel: number;
 
   public run(): void {
-    if (this.prevLevel < this.room.controller.level) {
+    if (this.prevLevel < this.room.controller.level &&
+        this.buildingCursor >= this.colonyPlanner.rclPrefabs[this.room.controller.level - 1].length) {
       this.prevLevel = this.room.controller.level;
       this.buildingCursor = 0;
       this.cursor = 0;

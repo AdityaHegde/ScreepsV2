@@ -18,7 +18,9 @@ export class BuildGroupActions extends JobGroupActions {
       powerMulti = REPAIR_POWER;
     }
     if (returnValue === OK) {
-      creepWrapper.targetWeight -= Math.min(powerMulti * creepWrapper.power, creepWrapper.entity.store.getUsedCapacity());
+      const weightDecrease = Math.min(powerMulti * creepWrapper.power, creepWrapper.entity.store.getUsedCapacity())
+      creepWrapper.targetWeight -= weightDecrease;
+      creepWrapper.weight -= weightDecrease;
     }
     return returnValue;
   }
@@ -27,6 +29,7 @@ export class BuildGroupActions extends JobGroupActions {
     if (targetWrapper.entity instanceof ConstructionSite) {
       EventLoop.getEventLoop().addEvent(StructureBuiltEventHandler.getEvent(
         this.room.name, targetWrapper.entity.structureType, targetWrapper.entity.pos.x, targetWrapper.entity.pos.y));
+      this.logger.setRoom(this.room).log(`Construction completed at pos=(${targetWrapper.arrayPos.toString()})`);
     }
   }
 }

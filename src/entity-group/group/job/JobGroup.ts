@@ -10,7 +10,7 @@ import {CreepWrapper} from "@wrappers/CreepWrapper";
 import {isNearToArrayPos} from "@pathfinder/PathUtils";
 import {JobGroupActions} from "./JobGroupActions";
 import {
-  JobParams,
+  JobParams, JobResourceIdx,
   JobSourceEntityPoolIdx,
   JobSourceIdIdx, JobTargetEntityPoolIdx,
   JobTargetIdIdx,
@@ -18,8 +18,6 @@ import {
 import {getWrapperById} from "@wrappers/getWrapperById";
 import {Globals} from "@globals/Globals";
 import {EntityPool} from "../../entity-pool/EntityPool";
-import {Traveler} from "@pathfinder/Traveler";
-import {USE_CUSTOM_PATHFINDER} from "../../../constants";
 
 export class JobGroup extends CreepGroup {
   @inMemory(() => [])
@@ -61,11 +59,7 @@ export class JobGroup extends CreepGroup {
 
   private moveCreepWrapper(creepWrapper: CreepWrapper, moveTargetWrapper: EntityWrapper<BaseEntityType>): void {
     if (moveTargetWrapper.arrayPos) {
-      if (USE_CUSTOM_PATHFINDER) {
-        this.pathFinder.pathNavigator.move(creepWrapper, moveTargetWrapper.arrayPos);
-      } else {
-        Traveler.travelTo(creepWrapper.entity, moveTargetWrapper.roomPos, {range: 1});
-      }
+      this.pathFinder.pathNavigator.move(creepWrapper, moveTargetWrapper.arrayPos);
     }
   }
 
@@ -116,8 +110,7 @@ export class JobGroup extends CreepGroup {
         return;
       }
       creepWrapper.subTask = 1;
-      // creepWrapper.weight = creepWrapper.entity.store.getUsedCapacity(creepWrapper.job[JobResourceIdx]);
-      // this.logger.log(`Reached target. weight=${creepWrapper.weight}`);
+      creepWrapper.weight = creepWrapper.entity.store.getUsedCapacity(creepWrapper.job[JobResourceIdx]);
     }
 
     const targetActionReturn = this.jobGroupActions.targetAction(creepWrapper, targetWrapper);
@@ -132,14 +125,12 @@ export class JobGroup extends CreepGroup {
 
     // TODO: if creep still has resource, acquire another target
     this.endJob(creepWrapper);
-    // this.jobGroupActions.actionHasCompleted(creepWrapper, targetWrapper);
   }
 
   private claimJob(creepWrapper: CreepWrapper): boolean {
     let claimedJob: JobParams;
     if (this.jobs.length > 0) {
       // claimedJob = this.jobs.shift();
-      // TODO: get weight and update
     } else {
       const capacity = creepWrapper.entity.store.getFreeCapacity();
       for (const jobNetwork of this.jobNetworks) {
@@ -167,7 +158,7 @@ export class JobGroup extends CreepGroup {
           .releaseTarget(creepWrapper.job[JobSourceIdIdx], creepWrapper.weight);
       }
       if (Globals.getGlobal<EntityPool>(EntityPool as any, creepWrapper.job[JobTargetEntityPoolIdx])
-          .releaseTarget(creepWrapper.job[JobTargetIdIdx], creepWrapper.targetWeight)) {
+        .releaseTarget(creepWrapper.job[JobTargetIdIdx], creepWrapper.targetWeight)) {
         this.jobGroupActions.actionHasCompleted(creepWrapper, getWrapperById(creepWrapper.job[JobTargetIdIdx]));
       }
     }

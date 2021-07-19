@@ -6,10 +6,8 @@ import {getWrapperById} from "@wrappers/getWrapperById";
 import {EntityWrapper} from "@wrappers/EntityWrapper";
 import {CreepsSpawner} from "../creeps-manager/CreepsSpawner";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
-import {Traveler} from "@pathfinder/Traveler";
 import {isNearToArrayPos} from "@pathfinder/PathUtils";
 import {PositionsEntityType, PositionsEntityWrapper} from "@wrappers/PositionsEntityWrapper";
-import {USE_CUSTOM_PATHFINDER} from "../../constants";
 
 export class ContainerActionGroup<ContainerActionGroupTargetType extends
   PositionsEntityWrapper<PositionsEntityType>> extends CreepGroup {
@@ -24,6 +22,9 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
 
   @inMemory()
   public hasHaul: boolean;
+
+  private powerByPosition: Array<number>;
+  private totalPower: number;
 
   public setContainer(container: StructureContainer): void {
     this.containerId = container.id;
@@ -55,13 +56,7 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
             this.logger.log(`reached ${creepWrapper.entity.pos.x},${creepWrapper.entity.pos.y}`);
           }
         } else {
-          if (USE_CUSTOM_PATHFINDER) {
-            this.pathFinder.pathNavigator.move(creepWrapper, this.target.roadEndArrayPos);
-          } else {
-            Traveler.travelTo(creepWrapper.entity,
-              new RoomPosition(this.target.roadEndArrayPos[0], this.target.roadEndArrayPos[1], this.room.name),
-              {range: 0});
-          }
+          this.pathFinder.pathNavigator.move(creepWrapper, this.target.roadEndArrayPos);
           return;
         }
       }
@@ -69,9 +64,9 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
       this.takeAction(creepWrapper);
     });
 
-    rearrangePositions(this.target, reachedCreepWrapper, this.pathFinder.pathNavigator);
+    rearrangePositions(this.target as any, reachedCreepWrapper, this.pathFinder.pathNavigator);
 
-    this.depositResource();
+    this.takeActions();
   }
 
   public removeEntityWrapper(creepWrapper: CreepWrapper): void {
@@ -84,36 +79,44 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
     // to implement
   }
 
-  protected middleCreepAction(creepWrapper: CreepWrapper): void {
+  protected middleCreepAction(creepWrapper: CreepWrapper, totalPower: number): void {
     // to implement
   }
 
   protected sideCreepActionToContainer(creepWrapper: CreepWrapper): void {
-    this.middleCreepAction(creepWrapper);
+    this.middleCreepAction(creepWrapper, this.totalPower);
   }
 
-  protected sideCreepActionToAnother(creepWrapper: CreepWrapper, targetCreepWrapper: CreepWrapper): void {
+  protected sideCreepActionToAnother(creepWrapper: CreepWrapper, targetCreepWrapper: CreepWrapper, powerLeft: number): void {
     // to implement
   }
 
-  private depositResource() {
-    this.moveResourceToCenter(1);
-    this.moveResourceToCenter(-1);
+  private takeActions() {
+    this.powerByPosition = this.target.positionAssignments.map(() => 0);
+    this.totalPower = 0;
+    this.getPowerByPosition(1);
+    this.getPowerByPosition(-1);
+
+    const centerCreepWrapper = this.target.positionAssignments[this.target.middleIdx] ?
+      CreepWrapper.getEntityWrapper<CreepWrapper>(this.target.positionAssignments[this.target.middleIdx]) : null;
+    if (centerCreepWrapper) {
+      this.totalPower += centerCreepWrapper.power;
+    }
+
+    this.moveResources(1);
+    this.moveResources(-1);
 
     if (!this.target.positionAssignments[this.target.middleIdx]) return;
-    const centerCreepWrapper =
-      CreepWrapper.getEntityWrapper<CreepWrapper>(this.target.positionAssignments[this.target.middleIdx]);
-
-    this.middleCreepAction(centerCreepWrapper);
+    this.middleCreepAction(centerCreepWrapper, this.totalPower);
   }
 
-  private moveResourceToCenter(positionsDirection: ShiftDirection) {
-    const checkIdx = getIdxChecker(this.target, positionsDirection);
+  private moveResources(positionsDirection: ShiftDirection) {
+    const checkIdx = getIdxChecker(this.target as any, positionsDirection);
     for (let i = this.target.middleIdx + positionsDirection; checkIdx(i); i += positionsDirection) {
       if (!this.target.positionAssignments[i]) continue;
       const creepWrapper = CreepWrapper.getEntityWrapper<CreepWrapper>(this.target.positionAssignments[i]);
 
-      if (this.container) {
+      if (this.container && isNearToArrayPos(creepWrapper.arrayPos, this.container.arrayPos)) {
         this.sideCreepActionToContainer(creepWrapper);
         return;
       }
@@ -122,7 +125,23 @@ export class ContainerActionGroup<ContainerActionGroupTargetType extends
       const targetCreepWrapper =
         CreepWrapper.getEntityWrapper<CreepWrapper>(this.target.positionAssignments[i - positionsDirection]);
 
-      this.sideCreepActionToAnother(creepWrapper, targetCreepWrapper);
+      this.sideCreepActionToAnother(creepWrapper, targetCreepWrapper, this.powerByPosition[i]);
+    }
+  }
+
+  private getPowerByPosition(positionsDirection: ShiftDirection) {
+    const checkIdx = positionsDirection === 1 ? (idx => idx < this.target.middleIdx) : (idx => idx > this.target.middleIdx);
+
+    for (
+      let i = positionsDirection === 1 ? 0 : this.target.positionAssignments.length - 1, power = 0;
+      checkIdx(i); i += positionsDirection
+    ) {
+      if (this.target.positionAssignments[i]) {
+        const creepWrapper = CreepWrapper.getEntityWrapper<CreepWrapper>(this.target.positionAssignments[i]);
+        power += creepWrapper.power;
+        this.totalPower += creepWrapper.power;
+      }
+      this.powerByPosition[i] = power;
     }
   }
 }
