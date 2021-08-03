@@ -1,8 +1,8 @@
 import {EventEntryBase, EventHandler} from "./EventEntryBase";
 import {Globals} from "@globals/Globals";
-import {CreepGroup} from "../entity-group/group/CreepGroup";
 import {CreepWrapper} from "@wrappers/CreepWrapper";
-import {CreepsSpawner} from "../entity-group/creeps-manager/CreepsSpawner";
+import {CreepsSpawner} from "@wrappers/creeps-spawner/CreepsSpawner";
+import {Entity} from "@wrappers/Entity";
 
 export const CreepCreatedEventEntryType = "CreepCreated";
 
@@ -23,7 +23,7 @@ export class CreepCreatedEventHandler extends EventHandler<CreepCreatedEventEntr
 
     const creepWrapper: CreepWrapper = CreepWrapper.getEntityWrapper(creep.id);
     creepWrapper.power = eventEntry.power;
-    Globals.getGlobal<CreepGroup>(CreepGroup as any, eventEntry.groupId)?.addEntityWrapper(
+    Globals.getGlobal<Entity>(Entity, eventEntry.groupId)?.addEntity(
       CreepWrapper.getEntityWrapper(creep.id),
     );
     Globals.getGlobal<CreepsSpawner>(CreepsSpawner as any, eventEntry.groupId)?.spawnedCreep();

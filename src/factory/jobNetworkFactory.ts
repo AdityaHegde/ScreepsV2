@@ -1,48 +1,57 @@
-import {JobNetwork} from "../entity-group/group/job/JobNetwork";
 import {getIdFromRoom} from "@utils/getIdFromRoom";
-import {BUILD_ID, CONTROLLER_ID, DEPOSIT_ID, REPAIR_ID, SOURCE_ID} from "../constants";
+import {BUILD_GROUP_ID, BUILD_ID, CONTROLLER_ID, DEPOSIT_ID, HAUL_GROUP_ID, REPAIR_ID, SOURCE_ID} from "../constants";
 import {Globals} from "@globals/Globals";
-import {EntityPool} from "../entity-group/entity-pool/EntityPool";
-import {ResourceEntityPool} from "../entity-group/entity-pool/ResourceEntityPool";
+import {JobNetwork} from "@wrappers/group/JobNetwork";
+import {WeightedGroup} from "@wrappers/group/WeightedGroup";
+import {getWrapperById} from "@wrappers/getWrapperById";
 
-function getSourceEntityPool(room: Room): EntityPool {
+function getSourceGroup(room: Room): WeightedGroup {
   const id = getIdFromRoom(room, SOURCE_ID);
-  return Globals.getGlobal(ResourceEntityPool as any, id, () =>
-    Globals.addGlobal(new ResourceEntityPool(getIdFromRoom(room, SOURCE_ID), room, true)));
+  return Globals.getGlobal(WeightedGroup, id, () =>
+    Globals.addGlobal(new WeightedGroup(getIdFromRoom(room, SOURCE_ID), true)));
 }
 
 export function getHaulNetworks(room: Room): Array<JobNetwork> {
-  const sourceEntityPool = getSourceEntityPool(room);
+  const sourceEntityPool = getSourceGroup(room);
   return [
     Globals.addGlobal(new JobNetwork(
-      getIdFromRoom(room, DEPOSIT_ID), room,
-      sourceEntityPool,
-      Globals.addGlobal(new EntityPool(getIdFromRoom(room, DEPOSIT_ID), room)), 1,
-      RESOURCE_ENERGY,
-    )),
-    Globals.addGlobal(new JobNetwork(
-      getIdFromRoom(room, CONTROLLER_ID), room,
-      sourceEntityPool,
-      Globals.addGlobal(new EntityPool(getIdFromRoom(room, CONTROLLER_ID), room)), 1,
+      getIdFromRoom(room, HAUL_GROUP_ID),
+      [sourceEntityPool],
+      [Globals.addGlobal(new WeightedGroup(getIdFromRoom(room, DEPOSIT_ID)))],
       RESOURCE_ENERGY,
     )),
   ];
 }
 
 export function getBuildNetworks(room: Room): Array<JobNetwork> {
-  const sourceEntityPool = getSourceEntityPool(room);
+  const sourceEntityPool = getSourceGroup(room);
   return [
     Globals.addGlobal(new JobNetwork(
-      getIdFromRoom(room, BUILD_ID), room,
-      sourceEntityPool,
-      Globals.addGlobal(new EntityPool(getIdFromRoom(room, BUILD_ID), room)), 1,
-      RESOURCE_ENERGY,
-    )),
-    Globals.addGlobal(new JobNetwork(
-      getIdFromRoom(room, REPAIR_ID), room,
-      sourceEntityPool,
-      Globals.addGlobal(new EntityPool(getIdFromRoom(room, REPAIR_ID), room)), REPAIR_POWER / BUILD_POWER,
+      getIdFromRoom(room, BUILD_GROUP_ID),
+      [sourceEntityPool],
+      [
+        Globals.addGlobal(new WeightedGroup(getIdFromRoom(room, BUILD_ID))),
+        Globals.addGlobal(new WeightedGroup(getIdFromRoom(room, REPAIR_ID))),
+      ],
       RESOURCE_ENERGY,
     )),
   ];
+}
+
+export function addSourcesToHaulNetwork(room: Room): void {
+  const sourceGroup = Globals.getGlobal<WeightedGroup>(WeightedGroup, getIdFromRoom(room, SOURCE_ID));
+
+  room.find(FIND_SOURCES).forEach(source => sourceGroup.addWeightedEntity(
+    getWrapperById(source.id), 0,
+  ));
+}
+
+export function addControllerToHaulNetwork(room: Room): void {
+  const depositGroup = Globals.getGlobal<WeightedGroup>(WeightedGroup, getIdFromRoom(room, DEPOSIT_ID));
+  depositGroup.addWeightedEntity(getWrapperById(room.controller.id), 0);
+}
+
+export function addToHaulNetwork(room: Room): void {
+  addSourcesToHaulNetwork(room);
+  addControllerToHaulNetwork(room);
 }

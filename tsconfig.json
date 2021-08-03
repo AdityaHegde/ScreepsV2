@@ -13,11 +13,13 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
+      "@factory/*": ["src/factory/*"],
       "@globals/*": ["src/globals/*"],
       "@memory/*": ["src/memory/*"],
       "@pathfinder/*": ["src/pathfinder/*"],
       "@utils/*": ["src/utils/*"],
-      "@wrappers/*": ["src/wrappers/*"]
+      "@wrappers/*": ["src/wrappers/*"],
+      "@test-utils/*": ["test/utils/*"]
     }
   },
   "include": [

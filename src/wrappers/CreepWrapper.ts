@@ -1,9 +1,9 @@
-import {EntityWrapper} from "./EntityWrapper";
+import {GameEntity} from "./GameEntity";
 import {ArrayPos} from "../preprocessing/Prefab";
 import {inMemory} from "@memory/inMemory";
-import {JobParams} from "../entity-group/group/job/JobParams";
+import {JobParams} from "./group/JobParams";
 
-export class CreepWrapper extends EntityWrapper<Creep> {
+export class CreepWrapper extends GameEntity<Creep> {
   @inMemory()
   public power: number;
 
@@ -27,3 +27,5 @@ export class CreepWrapper extends EntityWrapper<Creep> {
     this.path = undefined;
   }
 }
+
+(Creep.prototype as any).WRAPPER = CreepWrapper;

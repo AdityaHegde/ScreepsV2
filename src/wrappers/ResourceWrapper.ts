@@ -1,8 +1,8 @@
-import {EntityWrapper} from "@wrappers/EntityWrapper";
+import {GameEntity} from "@wrappers/GameEntity";
 import {inMemory} from "@memory/inMemory";
 import {ArrayPos} from "../preprocessing/Prefab";
 
-export class ResourceWrapper extends EntityWrapper<Resource> {
+export class ResourceWrapper extends GameEntity<Resource> {
   @inMemory()
   public entityId: string;
 

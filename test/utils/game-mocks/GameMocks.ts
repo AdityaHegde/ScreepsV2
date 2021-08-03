@@ -2,12 +2,14 @@ import {SinonSandbox, SinonStub} from "sinon";
 import {GameGlobals} from "./GameGlobals";
 import {RoomGrid} from "./RoomGrid";
 import {MAX_X, MAX_Y} from "../PathTestUtils";
-import {CreepImpl} from "./impls/CreepImpl";
+import {CreepImpl, CreepImplOpts} from "./impls/CreepImpl";
 import {StructureImpl, StructureImplOpts} from "./impls/StructureImpl";
 import {ConstructionSiteImpl, ConstructionSiteImplOpts} from "./impls/ConstructionSiteImpl";
-import {BaseEntityType} from "@wrappers/EntityWrapper";
+import {BaseEntityType} from "@wrappers/GameEntity";
 import {SourceImpl} from "./impls/SourceImpl";
 import {ControllerImpl} from "./impls/ControllerImpl";
+import {RoomImpl} from "@test-utils/game-mocks/impls/RoomImpl";
+import {ArrayPos} from "../../../src/preprocessing/Prefab";
 
 export class GameMocks {
   private readonly sandbox: SinonSandbox;
@@ -33,8 +35,14 @@ export class GameMocks {
     (global as any).StructureController = ControllerImpl;
   }
 
-  public getCreep(name: string, pos: RoomPosition): CreepImpl {
-    return this.mockObject(new CreepImpl(name, pos, this.gameGlobals));
+  public getRoom(name: string, controllerPos?: RoomPosition, sourcesPos?: Array<RoomPosition>): RoomImpl {
+    return new RoomImpl(name,
+      controllerPos ? this.getController(`${name}-c`, controllerPos) : null,
+      sourcesPos ? sourcesPos.map((sourcePos, idx) => this.getSource(`${name}-s-${idx}`, sourcePos)) : []);
+  }
+
+  public getCreep(name: string, pos: RoomPosition, opts?: CreepImplOpts): CreepImpl {
+    return this.mockObject(new CreepImpl(name, pos, this.gameGlobals, opts));
   }
 
   public getConstructionSite(id: string, pos: RoomPosition, opts: ConstructionSiteImplOpts): ConstructionSiteImpl {

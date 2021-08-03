@@ -2,10 +2,8 @@ import {Planner} from "./Planner";
 import {ColonyPlanner} from "./ColonyPlanner";
 import {BuildingTypeToPrefabTypeMap} from "../preprocessing/ParserMetadata";
 import {getWrapperById} from "@wrappers/getWrapperById";
-import {ControllerWrapper} from "@wrappers/ControllerWrapper";
-import {HarvestableEntityType, HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
 import {ArrayPos, BuildingPlan} from "../preprocessing/Prefab";
-import {RoadPos} from "@pathfinder/RoadTypes";
+import {PositionsEntityType, PositionsEntityWrapper} from "@wrappers/positions/PositionsEntityWrapper";
 
 export class RoadPlanner extends Planner {
   public toStructureId: string;
@@ -18,7 +16,7 @@ export class RoadPlanner extends Planner {
   }
 
   public plan(colonyPlanner: ColonyPlanner): void {
-    const targetEntity = getWrapperById(this.toStructureId) as ControllerWrapper | HarvestableEntityWrapper<HarvestableEntityType>;
+    const targetEntity = getWrapperById(this.toStructureId) as PositionsEntityWrapper<PositionsEntityType>;
     const roadBuildingPlan = colonyPlanner.rclPrefabs[0]
       .find(buildingPrefab => buildingPrefab[0] === BuildingTypeToPrefabTypeMap[STRUCTURE_ROAD]);
     let containerBuildingPrefab = colonyPlanner.rclPrefabs[0]

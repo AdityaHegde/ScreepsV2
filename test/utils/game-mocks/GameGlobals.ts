@@ -5,7 +5,7 @@ export class GameGlobals {
   public sandbox: SinonSandbox;
   public roomGrid: RoomGrid;
 
-  public actions: Array<() => void>;
+  public actions = new Array<() => void>();
 
   public constructor(sandbox: SinonSandbox, roomGrid: RoomGrid) {
     this.sandbox = sandbox;

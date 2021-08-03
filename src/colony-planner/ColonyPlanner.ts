@@ -13,9 +13,9 @@ import {BunkerPlanner} from "./BunkerPlanner";
 import {RoadPlanner} from "./RoadPlanner";
 import {Logger} from "@utils/Logger";
 import {Globals} from "@globals/Globals";
-import {EntityPool} from "../entity-group/entity-pool/EntityPool";
 import {getWrapperById} from "@wrappers/getWrapperById";
-import {EntityWrapper} from "@wrappers/EntityWrapper";
+import {GameEntity} from "@wrappers/GameEntity";
+import {WeightedGroup} from "@wrappers/group/WeightedGroup";
 
 @MemoryClass("plan")
 export class ColonyPlanner extends ColonyBaseClass {
@@ -49,10 +49,10 @@ export class ColonyPlanner extends ColonyBaseClass {
     if (!spawn) {
       return false;
     }
-    const spawnEntityWrapper = getWrapperById(spawn.id) as EntityWrapper<StructureSpawn>;
+    const spawnEntityWrapper = getWrapperById(spawn.id) as GameEntity<StructureSpawn>;
     // adding a weight buffer to account for regen. TODO: do this in a better way
-    Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(this.room, DEPOSIT_ID))
-      .addEntityWrapper(spawnEntityWrapper, 0);
+    Globals.getGlobal<WeightedGroup>(WeightedGroup, getIdFromRoom(this.room, DEPOSIT_ID))
+      .addWeightedEntity(spawnEntityWrapper, 0);
 
     this.center = [spawn.pos.x, spawn.pos.y];
     this.costMatrix = new PathFinder.CostMatrix();

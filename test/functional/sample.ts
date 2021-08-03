@@ -5,7 +5,9 @@ import {createLogger, format, transports} from "winston";
 import {execSync} from "child_process";
 
 (async () => {
-  execSync("rm logs/out.log");
+  try {
+    execSync("rm logs/out.log");
+  } catch (err) {}
 
   const logger = createLogger({
     level: "debug",
@@ -30,13 +32,14 @@ import {execSync} from "child_process";
   });
 
   await server.start();
-  for (let i = 0; i < 2000; i++) {
+  for (let i = 0; i < 250; i++) {
     await server.tick();
-    const newNotifications = (await bot.newNotifications)
+    const newNotifications = (await bot.newNotifications);
+    if (newNotifications.length) console.log("Error in tick", i + 1);
     newNotifications.forEach(({ message }) => console.log(`[notification] ${message.join ? message.join(" ") : message}`));
   }
   const memory: Record<string, any> = JSON.parse(await bot.memory);
-  ["entity", "entityPool", "groups"].forEach(key => console.log(key, JSON.stringify(memory[key])));
+  ["entity"].forEach(key => console.log(key, JSON.stringify(memory[key])));
   server.stop();
   process.exit(0);
 })();

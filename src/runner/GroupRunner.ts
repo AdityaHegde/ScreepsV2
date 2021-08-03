@@ -1,53 +1,51 @@
 import {ColonyBaseClass} from "../ColonyBaseClass";
 import {MemoryClass} from "@memory/MemoryClass";
-import {EntityGroup} from "../entity-group/group/EntityGroup";
-import {CreepGroup} from "../entity-group/group/CreepGroup";
-import {CreepSpawnQueue} from "../entity-group/creeps-manager/CreepSpawnQueue";
+import {CreepSpawnQueue} from "../wrappers/creeps-spawner/CreepSpawnQueue";
+import {Entity} from "@wrappers/Entity";
+import {CreepsSpawner} from "@wrappers/creeps-spawner/CreepsSpawner";
 
 @MemoryClass("groupRunner")
 export class GroupRunner extends ColonyBaseClass {
-  public groups: Array<EntityGroup<any>>;
+  public entities: Array<Entity>;
   public creepSpawnQueue: CreepSpawnQueue;
 
   public constructor(
     id: string, room: Room,
-    groups: Array<EntityGroup<any>>, creepSpawnQueue: CreepSpawnQueue,
+    groups: Array<Entity>, creepSpawnQueue: CreepSpawnQueue,
   ) {
     super(id, room);
-    this.groups = groups;
+    this.entities = groups;
     this.creepSpawnQueue = creepSpawnQueue;
   }
 
   public init(): void {
-    this.groups.forEach(group => group.init());
-    [0, 1, 2, 1, 0, 1, 2, 1, 3, 3].forEach(groupIdx =>
-      this.creepSpawnQueue.addToQueue((this.groups[groupIdx] as CreepGroup).creepSpawner.getSpawnQueueEntry()));
+    [0, 2, 1, 2, 0, 2, 1, 2, 3, 3].forEach(groupIdx =>
+      this.creepSpawnQueue.addToQueue(((this.entities[groupIdx] as any).creepSpawner as CreepsSpawner).getSpawnQueueEntry()));
   }
 
   public preTick(): void {
-    this.groups.forEach((group) => {
-      group.preTick();
-      if (group instanceof CreepGroup) {
-        this.handleCreepSpawner(group);
+    // nothing
+  }
+
+  public tick(): void {
+    this.entities.forEach(group => group.run());
+  }
+
+  public postTick(): void {
+    this.entities.forEach((entity) => {
+      if ((entity as any).creepSpawner) {
+        this.handleCreepSpawner(entity);
       }
     });
   }
 
-  public tick(): void {
-    this.groups.forEach(group => group.tick());
-  }
+  private handleCreepSpawner(entity: Entity) {
+    const creepSpawner = ((entity as any).creepSpawner as CreepsSpawner);
+    if (!this.creepSpawnQueue?.hasSpaceForCreep(entity.id)) return;
 
-  public postTick(): void {
-    this.groups.forEach(group => group.postTick());
-  }
-
-  private handleCreepSpawner(group: CreepGroup) {
-    group.creepSpawner.updateBodyParts();
-
-    if (!this.creepSpawnQueue?.hasSpaceForCreep(group.id)) return;
-
-    if (group.creepSpawner.shouldSpawnCreeps()) {
-      this.creepSpawnQueue.addToQueue(group.creepSpawner.getSpawnQueueEntry());
+    creepSpawner.updateBodyParts();
+    if (entity.shouldSpawnCreep()) {
+      this.creepSpawnQueue.addToQueue(creepSpawner.getSpawnQueueEntry());
     }
   }
 }

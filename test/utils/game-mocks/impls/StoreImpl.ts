@@ -20,7 +20,7 @@ export class StoreImpl {
   }
 
   public transfer(store: StoreImpl, amount: number): void {
-    amount = Math.min(amount, this.energy);
+    amount = Math.min(amount ?? this.energy, this.energy);
 
     const freeCapacity = store.getFreeCapacity();
 

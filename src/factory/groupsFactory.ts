@@ -1,64 +1,60 @@
-import {HarvestGroup} from "../entity-group/group/HarvestGroup";
-import {Globals} from "@globals/Globals";
-import {HarvestableEntityWrapper} from "@wrappers/HarvestableEntityWrapper";
-import {getWrapperById} from "@wrappers/getWrapperById";
-import {HarvesterCreepsSpawner} from "../entity-group/creeps-manager/HarvesterCreepsSpawner";
-import {HaulGroupActions} from "../entity-group/group/HaulGroupActions";
-import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
-import {CreepsSpawner} from "../entity-group/creeps-manager/CreepsSpawner";
+import {JobGroup} from "@wrappers/group/JobGroup";
 import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {BUILD_GROUP_ID, CONTROLLER_ID, HAUL_GROUP_ID} from "../constants";
-import {JobNetwork} from "../entity-group/group/job/JobNetwork";
-import {ControllerUpgradeGroup} from "../entity-group/group/ControllerUpgradeGroup";
-import {ControllerWrapper} from "@wrappers/ControllerWrapper";
-import {ControllerUpgradeSpawner} from "../entity-group/creeps-manager/ControllerUpgradeSpawner";
-import {JobGroup} from "../entity-group/group/job/JobGroup";
-import {BuildGroupActions} from "../entity-group/group/BuildGroupActions";
+import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
+import {JobGroupActions} from "@wrappers/group/JobGroupActions";
+import {getBuildNetworks, getHaulNetworks} from "@factory/jobNetworkFactory";
+import {Globals} from "@globals/Globals";
+import {CreepsSpawner} from "@wrappers/creeps-spawner/CreepsSpawner";
+import {HarvesterCreepsSpawner} from "@wrappers/creeps-spawner/HarvesterCreepsSpawner";
+import {ControllerWrapper} from "@wrappers/positions/ControllerWrapper";
+import {ControllerUpgradeSpawner} from "@wrappers/creeps-spawner/ControllerUpgradeSpawner";
+import {BuildGroupActions} from "@wrappers/group/BuildGroupActions";
+import {SourceWrapper} from "@wrappers/positions/SourceWrapper";
 
-export function getSourceHarvestGroup(
-  room: Room, pathFinder: ColonyPathFinder, target: Source,
-): HarvestGroup<HarvestableEntityWrapper<Source>> {
+export function getHaulGroup(room: Room, pathFinder: ColonyPathFinder): JobGroup {
+  const id = getIdFromRoom(room, HAUL_GROUP_ID);
+  const creepsSpawner = Globals.addGlobal(new CreepsSpawner(id, room, {
+    maxCreeps: 3,
+    maxMainPartsCount: 25,
+    initParts: [CARRY, MOVE],
+    matchCarry: false,
+    matchMove: false,
+    mainPart: CARRY,
+  }));
+  return Globals.addGlobal(new JobGroup(id, creepsSpawner, pathFinder, getHaulNetworks(room), new JobGroupActions()));
+}
+
+export function getHarvestGroup(source: Source, room: Room, pathFinder: ColonyPathFinder): SourceWrapper {
+  const creepsSpawner = Globals.addGlobal(new HarvesterCreepsSpawner(source.id, room, {
+    maxCreeps: 3,
+    maxMainPartsCount: 0,
+    initParts: [WORK, CARRY, MOVE],
+    matchCarry: false,
+    matchMove: false,
+    mainPart: WORK,
+  }));
+  return Globals.addGlobal(new SourceWrapper(source.id, creepsSpawner, pathFinder));
+}
+export function getHarvestGroups(room: Room, pathFinder: ColonyPathFinder): Array<SourceWrapper> {
+  return room.find(FIND_SOURCES).map(source => getHarvestGroup(source, room, pathFinder));
+}
+
+export function getControllerGroup(room: Room, pathFinder: ColonyPathFinder): ControllerWrapper {
   const creepsSpawner = Globals.addGlobal(
-    new HarvesterCreepsSpawner(target.id, room, {
-      maxCreeps: 3,
-      maxMainPartsCount: 0,
-      initParts: [WORK, CARRY, MOVE],
+    new ControllerUpgradeSpawner(room.controller.id, room, {
+      maxCreeps: 2,
+      maxMainPartsCount: 25,
+      initParts: [WORK, WORK, CARRY, MOVE],
       matchCarry: false,
       matchMove: false,
       mainPart: WORK,
     }),
   );
-  creepsSpawner.harvestTargetId = target.id;
-  const harvestGroup = Globals.addGlobal(
-    new HarvestGroup<HarvestableEntityWrapper<Source>>(
-      target.id, room, creepsSpawner, pathFinder,
-      getWrapperById(target.id) as HarvestableEntityWrapper<Source>,
-    )
-  );
-  creepsSpawner.creepGroup = harvestGroup;
-  return harvestGroup;
+  return Globals.addGlobal(new ControllerWrapper(room.controller.id, creepsSpawner, pathFinder));
 }
 
-export function getHaulGroup(room: Room, pathFinder: ColonyPathFinder, haulNetworks: Array<JobNetwork>): JobGroup {
-  const id = getIdFromRoom(room, HAUL_GROUP_ID);
-  const creepsSpawner = Globals.addGlobal(
-    new CreepsSpawner(id, room, {
-      maxCreeps: 3,
-      maxMainPartsCount: 25,
-      initParts: [CARRY, MOVE],
-      matchCarry: false,
-      matchMove: false,
-      mainPart: CARRY,
-    })
-  );
-  const haulGroup = Globals.addGlobal(
-    new JobGroup(id, room, creepsSpawner, pathFinder, haulNetworks, new HaulGroupActions(room, CARRY_CAPACITY)),
-  );
-  creepsSpawner.creepGroup = haulGroup;
-  return haulGroup;
-}
-
-export function getBuildGroup(room: Room, pathFinder: ColonyPathFinder, haulNetworks: Array<JobNetwork>): JobGroup {
+export function getBuildGroup(room: Room, pathFinder: ColonyPathFinder): JobGroup {
   const id = getIdFromRoom(room, BUILD_GROUP_ID);
   const creepsSpawner = Globals.addGlobal(
     new CreepsSpawner(id, room, {
@@ -70,28 +66,5 @@ export function getBuildGroup(room: Room, pathFinder: ColonyPathFinder, haulNetw
       mainPart: WORK,
     })
   );
-  const buildGroup = Globals.addGlobal(
-    new JobGroup(id, room, creepsSpawner, pathFinder, haulNetworks, new BuildGroupActions(room, BUILD_POWER)),
-  );
-  creepsSpawner.creepGroup = buildGroup;
-  return buildGroup;
-}
-
-export function getControllerUpgradeGroup(room: Room, pathFinder: ColonyPathFinder): ControllerUpgradeGroup {
-  const id = getIdFromRoom(room, CONTROLLER_ID);
-  const creepsSpawner = Globals.addGlobal(
-    new ControllerUpgradeSpawner(id, room, {
-      maxCreeps: 2,
-      maxMainPartsCount: 25,
-      initParts: [WORK, WORK, CARRY, MOVE],
-      matchCarry: false,
-      matchMove: false,
-      mainPart: WORK,
-    }),
-  );
-  const controllerUpgradeGroup = Globals.addGlobal(
-    new ControllerUpgradeGroup(id, room, creepsSpawner, pathFinder,
-      Globals.addGlobal(new ControllerWrapper(room.controller.id))));
-  creepsSpawner.creepGroup = controllerUpgradeGroup;
-  return controllerUpgradeGroup;
+  return Globals.addGlobal(new JobGroup(id, creepsSpawner, pathFinder, getBuildNetworks(room), new BuildGroupActions()));
 }

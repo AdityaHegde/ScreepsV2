@@ -9,8 +9,8 @@ export const COLONY_BUILDINGS_ID = "buildings";
 export const DEPOSIT_ID = "deposit";
 export const SOURCE_ID = "source";
 export const CONTROLLER_ID = "controller";
-export const BUILD_ID = "build";
-export const REPAIR_ID = "repair";
+export const BUILD_ID = "buildTar";
+export const REPAIR_ID = "repairTar";
 
 export const HAUL_GROUP_ID = "haul";
 export const BUILD_GROUP_ID = "build";
@@ -29,4 +29,4 @@ export const ROOM_MAX_Y = 50;
 export const RESOURCE_FIND_THRESHOLD = 10;
 
 // Memory constants
-export const GROUPS_MEMORY_NAME = "groups";
+export const ENTITY_MEMORY_NAME = "entity";

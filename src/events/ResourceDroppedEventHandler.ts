@@ -3,7 +3,7 @@ import {Globals} from "@globals/Globals";
 import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {SOURCE_ID} from "../constants";
 import {getWrapperById} from "@wrappers/getWrapperById";
-import {ResourceEntityPool} from "../entity-group/entity-pool/ResourceEntityPool";
+import {WeightedGroup} from "@wrappers/group/WeightedGroup";
 
 export const ResourceDroppedEventType = "ResourceDroppedEvent";
 
@@ -20,10 +20,10 @@ export class ResourceDroppedEventHandler extends EventHandler<any> {
     const resources = room.lookForAt(LOOK_RESOURCES, eventEntry.x, eventEntry.y);
     if (resources.length === 0) return true;
 
-    const sourceEntityPool = Globals.getGlobal<ResourceEntityPool>(ResourceEntityPool as any, getIdFromRoom(room, SOURCE_ID));
+    const sourceEntityPool = Globals.getGlobal<WeightedGroup>(WeightedGroup, getIdFromRoom(room, SOURCE_ID));
 
     resources.forEach((resource) => {
-      sourceEntityPool.addEntityWrapper(getWrapperById(resource.id), resource.amount);
+      sourceEntityPool.addWeightedEntity(getWrapperById(resource.id), resource.amount);
     });
 
     return false;

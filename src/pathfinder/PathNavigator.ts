@@ -58,6 +58,7 @@ export class PathNavigator {
     if (creepWrapper.entity.fatigue > 0) return;
 
     if (!creepWrapper.path) {
+      this.logger.log(`Moving from=(${creepWrapper.arrayPos.toString()}) to=(${pos.toString()})`);
       creepWrapper.path = this.getPath(creepWrapper, pos, shouldMoveIntoTarget);
     } else if (creepWrapper.path.length === 0) {
       return;

@@ -5,13 +5,14 @@ import {DEPOSIT_ID, ROOM_RUNNER_ID} from "../constants";
 import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {ColonyBuildings} from "../building/ColonyBuildings";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
-import {CreepSpawnQueue} from "../entity-group/creeps-manager/CreepSpawnQueue";
+import {CreepSpawnQueue} from "@wrappers/creeps-spawner/CreepSpawnQueue";
 import {GroupRunner} from "./GroupRunner";
 import {ColonyPlanner} from "../colony-planner/ColonyPlanner";
 import {getWrapperById} from "@wrappers/getWrapperById";
-import {EntityWrapper} from "@wrappers/EntityWrapper";
+import {GameEntity} from "@wrappers/GameEntity";
 import {Globals} from "@globals/Globals";
-import {EntityPool} from "../entity-group/entity-pool/EntityPool";
+import {WeightedGroup} from "@wrappers/group/WeightedGroup";
+import {addToHaulNetwork} from "@factory/jobNetworkFactory";
 
 @MemoryClass("runner")
 export class ColonyRunner extends ColonyBaseClass {
@@ -50,6 +51,7 @@ export class ColonyRunner extends ColonyBaseClass {
         this.room.memory.planned = true;
         this.creepSpawnQueue.init();
         this.groupRunner.init();
+        addToHaulNetwork(this.room);
       }
     }
 
@@ -86,9 +88,9 @@ export class ColonyRunner extends ColonyBaseClass {
   }
 
   private updateSpawnWeights() {
-    const depositPool = Globals.getGlobal<EntityPool>(EntityPool as any, getIdFromRoom(this.room, DEPOSIT_ID));
+    const depositPool = Globals.getGlobal<WeightedGroup>(WeightedGroup, getIdFromRoom(this.room, DEPOSIT_ID));
     this.creepSpawnQueue.spawnIds.forEach((spawnId) => {
-      const spawnEntityWrapper = getWrapperById(spawnId) as EntityWrapper<StructureSpawn>;
+      const spawnEntityWrapper = getWrapperById(spawnId) as GameEntity<StructureSpawn>;
       if (spawnEntityWrapper.entity.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return;
       depositPool.updateCurrentWeight(spawnEntityWrapper, -1,
         spawnEntityWrapper.entity.store.getCapacity(RESOURCE_ENERGY));

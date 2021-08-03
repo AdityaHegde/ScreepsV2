@@ -4,10 +4,9 @@ import {getIdFromRoom} from "@utils/getIdFromRoom";
 import {ColonyPlanner} from "../colony-planner/ColonyPlanner";
 import {ColonyBuildings} from "../building/ColonyBuildings";
 import {ColonyPathFinder} from "@pathfinder/ColonyPathFinder";
-import {CreepSpawnQueue} from "../entity-group/creeps-manager/CreepSpawnQueue";
+import {CreepSpawnQueue} from "@wrappers/creeps-spawner/CreepSpawnQueue";
 import {GroupRunner} from "../runner/GroupRunner";
-import {getBuildGroup, getControllerUpgradeGroup, getHaulGroup, getSourceHarvestGroup} from "./groupsFactory";
-import {getBuildNetworks, getHaulNetworks} from "./jobNetworkFactory";
+import {getBuildGroup, getControllerGroup, getHarvestGroups, getHaulGroup} from "@factory/groupsFactory";
 
 export function simpleRoomRunnerFactory(room: Room): ColonyRunner {
   const pathFinder = Globals.addGlobal(ColonyPathFinder.getColonyPathFinder(room));
@@ -16,10 +15,10 @@ export function simpleRoomRunnerFactory(room: Room): ColonyRunner {
   return ColonyRunner.getRoomRunner(
     room,
     Globals.addGlobal(new GroupRunner(getIdFromRoom(room, "group"), room, [
-      ...room.find(FIND_SOURCES).map(source => getSourceHarvestGroup(room, pathFinder, source)),
-      getHaulGroup(room, pathFinder, getHaulNetworks(room)),
-      getBuildGroup(room, pathFinder, getBuildNetworks(room)),
-      getControllerUpgradeGroup(room, pathFinder),
+      ...getHarvestGroups(room, pathFinder),
+      getHaulGroup(room, pathFinder),
+      getControllerGroup(room, pathFinder),
+      getBuildGroup(room, pathFinder),
     ], creepSpawnQueue)),
     Globals.addGlobal(ColonyBuildings.getColonyBuildings(room, Globals.addGlobal(ColonyPlanner.getColonyPlan(room, pathFinder)))),
     pathFinder,

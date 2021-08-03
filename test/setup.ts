@@ -20,6 +20,7 @@ import _ from "lodash";
 };
 (global as any).Game = {};
 (global as any).StructureController = class {};
+(global as any).Creep = class {};
 (global as any).Source = class {};
 (global as any).Mineral = class {};
 (global as any).Resource = class {};
